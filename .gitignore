@@ -1,0 +1,28 @@
+# Environment
+.env
+backend/.env
+
+# Database
+backend/leads.db
+backend/leads.db-wal
+backend/leads.db-shm
+backend/data/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Temp
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Optimised media (originals kept separately)
+
+# Docker
+.docker/
