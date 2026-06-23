@@ -3,7 +3,7 @@ import logging
 from database import get_leads, get_lead, update_lead_status, get_stats
 from telegram.client import tg_send, edit_message_text
 from telegram.messages import (
-    COMMANDS, format_lead_card, format_leads_list, format_stats, escape, EMOJI_ARROW
+    COMMANDS, format_lead_card, format_leads_list, format_review_card, format_stats, escape, EMOJI_ARROW
 )
 
 logger = logging.getLogger(__name__)
@@ -63,6 +63,36 @@ def handle_callback(chat_id: int | str, callback_data: str, message_id: int | No
                 edit_message_text(chat_id, message_id, text, reply_markup=reply_markup)
             else:
                 tg_send(chat_id, text, reply_markup=reply_markup)
+        return
+
+    if cmd == 'approve_review':
+        try:
+            lead_id = int(args[0]) if args else None
+        except (ValueError, IndexError):
+            return
+        if not lead_id:
+            return
+        update_lead_status(lead_id, 'approved')
+        lead = get_lead(lead_id)
+        if lead and message_id:
+            from telegram.messages import EMOJI_CHECK
+            text = f'{EMOJI_CHECK} Approved\n\n' + format_lead(lead)
+            edit_message_text(chat_id, message_id, text)
+        return
+
+    if cmd == 'reject_review':
+        try:
+            lead_id = int(args[0]) if args else None
+        except (ValueError, IndexError):
+            return
+        if not lead_id:
+            return
+        update_lead_status(lead_id, 'rejected')
+        lead = get_lead(lead_id)
+        if lead and message_id:
+            from telegram.messages import EMOJI_CROSS
+            text = f'{EMOJI_CROSS} Rejected\n\n' + format_lead(lead)
+            edit_message_text(chat_id, message_id, text)
         return
 
     if cmd:

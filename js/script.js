@@ -1,4 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
+  function escapeHtml(s) {
+    if (typeof s !== 'string') return '';
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
   var revealObserver = null;
   // Lightbox
   var lightbox = document.getElementById('lightbox');
@@ -682,6 +686,37 @@ document.addEventListener('DOMContentLoaded', function() {
       clearTimeout(testWheelTimer);
       testWheelTimer = setTimeout(function() { scrollTestimonials(dir); }, 40);
     }, { passive: false });
+
+    // Fetch approved reviews and append to slider
+    var reviewXhr = new XMLHttpRequest();
+    var backendBase = typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'http://localhost:5000';
+    reviewXhr.open('GET', backendBase + '/api/reviews', true);
+    reviewXhr.onload = function() {
+      if (reviewXhr.status < 200 || reviewXhr.status >= 300) return;
+      var reviews;
+      try { reviews = JSON.parse(reviewXhr.responseText); } catch(e) { return; }
+      if (!reviews || !reviews.length) return;
+      reviews.forEach(function(r) {
+        var card = document.createElement('div');
+        card.className = 'testimonial-card';
+        card.innerHTML =
+          '<div class="testimonial-card-top">' +
+            '<div class="testimonial-avatar" style="background:#D478B0"></div>' +
+            '<div>' +
+              '<cite>&mdash; ' + escapeHtml(r.name || '') + '</cite>' +
+              '<span class="testimonial-event">Review</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="testimonial-stars">★★★★★</div>' +
+          '<blockquote>&laquo;' + escapeHtml(r.comment || '') + '&raquo;</blockquote>';
+        testTrack.appendChild(card);
+        testCards.push(card);
+        testCardCount++;
+      });
+      centerSliderPaddings();
+      updateTestTrack();
+    };
+    reviewXhr.send();
   }
 
   // Stats counter animation (once)

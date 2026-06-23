@@ -44,6 +44,15 @@ def list_leads():
     return jsonify(leads)
 
 
+@api_bp.route('/api/reviews', methods=['GET'])
+def list_reviews():
+    """Public endpoint — no auth, returns only approved reviews."""
+    limit = request.args.get('limit', 20, type=int)
+    limit = min(max(limit, 1), 50)
+    reviews = database.get_approved_reviews(limit=limit)
+    return jsonify(reviews)
+
+
 @api_bp.route('/api/lead/<int:lead_id>', methods=['GET'])
 def get_lead_api(lead_id):
     auth_error = require_api_key()

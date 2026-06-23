@@ -48,6 +48,17 @@ def add_lead(name, phone, country, event_type, comment, page_url='', language=''
         return cur.lastrowid
 
 
+def get_approved_reviews(limit=20):
+    with get_db() as conn:
+        rows = conn.execute(
+            "SELECT id, name, country, comment, created_at FROM leads "
+            "WHERE event_type = 'Review' AND status = 'approved' "
+            "ORDER BY created_at DESC LIMIT ?",
+            (limit,)
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
 def get_leads(limit=10, offset=0, status=None):
     with get_db() as conn:
         if status:
@@ -81,7 +92,10 @@ def get_stats():
                 COUNT(*) as total,
                 SUM(CASE WHEN status='new' THEN 1 ELSE 0 END) as new,
                 SUM(CASE WHEN status='contacted' THEN 1 ELSE 0 END) as contacted,
-                SUM(CASE WHEN status='closed' THEN 1 ELSE 0 END) as closed
+                SUM(CASE WHEN status='closed' THEN 1 ELSE 0 END) as closed,
+                SUM(CASE WHEN status='moderation' THEN 1 ELSE 0 END) as moderation,
+                SUM(CASE WHEN status='approved' THEN 1 ELSE 0 END) as approved,
+                SUM(CASE WHEN status='rejected' THEN 1 ELSE 0 END) as rejected
             FROM leads
         ''').fetchone()
         return dict(row)

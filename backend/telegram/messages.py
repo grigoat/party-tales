@@ -33,6 +33,9 @@ STATUS_ICONS = {
     'new': EMOJI_GREEN,
     'contacted': EMOJI_YELLOW,
     'closed': EMOJI_BLACK,
+    'moderation': '\U0001F7E3',  # purple
+    'approved': '\U0001F7E2',
+    'rejected': '\u274C',
 }
 
 
@@ -111,3 +114,25 @@ def format_stats(stats):
         f'{EMOJI_BLACK} Закрыто: {stats["closed"]}\n'
         f'{EMOJI_CHART} Всего: {stats["total"]}'
     )
+
+
+EMOJI_CHECK = '\u2705'
+EMOJI_CROSS = '\u274C'
+EMOJI_PURPLE = '\U0001F7E3'
+
+
+def format_review_card(lead):
+    text = format_lead(lead)
+    reply_markup = {
+        'inline_keyboard': [[
+            {
+                'text': f'{EMOJI_CHECK} Approve',
+                'callback_data': f'approve_review_{lead["id"]}'
+            },
+            {
+                'text': f'{EMOJI_CROSS} Reject',
+                'callback_data': f'reject_review_{lead["id"]}'
+            },
+        ]]
+    }
+    return text, reply_markup

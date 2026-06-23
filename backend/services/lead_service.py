@@ -2,7 +2,7 @@ import logging
 
 import database
 from telegram.client import tg_send
-from telegram.messages import format_lead
+from telegram.messages import format_lead, format_review_card
 from config import CHAT_ID, TOKEN
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ def validate_lead_data(data: dict) -> tuple[dict | None, str | None]:
 
     if not cleaned.get('name') and 'name' not in fields_over_limit:
         errors.append('name обязателен')
-    if not cleaned.get('phone') and 'phone' not in fields_over_limit:
+    if not cleaned.get('phone') and 'phone' not in fields_over_limit and cleaned.get('event_type') != 'Review':
         errors.append('phone обязателен')
 
     if errors:
@@ -57,6 +57,11 @@ def create_lead(data: dict) -> tuple[dict | None, int | None]:
         language=cleaned['language'],
     )
 
+    if cleaned.get('event_type') == 'Review':
+        database.update_lead_status(lead_id, 'moderation')
+    else:
+        database.update_lead_status(lead_id, 'new')
+
     notify_managers(lead_id)
     return {'ok': True, 'id': lead_id}, 201
 
@@ -71,5 +76,9 @@ def notify_managers(lead_id: int):
         logger.warning('lead %s not found for notification', lead_id)
         return
 
-    text = format_lead(lead)
-    tg_send(CHAT_ID, text)
+    if lead.get('event_type') == 'Review':
+        text, reply_markup = format_review_card(lead)
+        tg_send(CHAT_ID, text, reply_markup=reply_markup)
+    else:
+        text = format_lead(lead)
+        tg_send(CHAT_ID, text)
