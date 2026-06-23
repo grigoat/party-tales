@@ -6,7 +6,7 @@
     "watchPatterns": ["backend/**"]
   },
   "deploy": {
-    "startCommand": "PYTHONPATH=backend gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile -",
+    "startCommand": "bash start.sh",
     "numReplicas": 1,
     "healthcheckPath": "/health",
     "restartPolicyType": "ON_FAILURE",
