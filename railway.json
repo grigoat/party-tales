@@ -6,7 +6,6 @@
     "watchPatterns": ["backend/**"]
   },
   "deploy": {
-    "startCommand": "bash start.sh",
     "numReplicas": 1,
     "healthcheckPath": "/health",
     "restartPolicyType": "ON_FAILURE",
