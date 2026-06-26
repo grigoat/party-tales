@@ -861,7 +861,8 @@ section { padding: clamp(3rem, 6vw, 6rem) clamp(1.5rem, 4vw, 3rem); }
   background: linear-gradient(135deg, #f5edf0, #e8dde3);
   cursor: pointer;
   position: relative;
-  transition: transform .5s cubic-bezier(.2,.9,.4,1.1), box-shadow .5s;
+  aspect-ratio: 4/3;
+  transition: aspect-ratio .4s ease, transform .5s cubic-bezier(.2,.9,.4,1.1), box-shadow .5s;
 }
 @keyframes galleryPulse {
   0% { opacity: .5; transform: scale(1); }
@@ -916,8 +917,15 @@ section { padding: clamp(3rem, 6vw, 6rem) clamp(1.5rem, 4vw, 3rem); }
 .gallery-item-featured {
   grid-row-end: span 2;
 }
+.gallery-item picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
 .gallery-item img {
   width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
   transition: transform .6s, opacity .5s;
   opacity: 0;

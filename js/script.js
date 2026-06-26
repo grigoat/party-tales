@@ -336,7 +336,12 @@ document.addEventListener('DOMContentLoaded', function() {
       img.alt = 'Фото';
       img.loading = 'lazy';
       img.setAttribute('data-i18n-aria', 'gallery.img.alt');
-      img.onload = function() { this.classList.add('loaded'); };
+      img.onload = function() {
+        this.classList.add('loaded');
+        if (this.naturalWidth && this.naturalHeight) {
+          this.closest('.gallery-item').style.aspectRatio = this.naturalWidth / this.naturalHeight;
+        }
+      };
       if (img.complete) img.classList.add('loaded');
       (function(imgEl, idxEl) {
         imgEl.addEventListener('click', function() {
