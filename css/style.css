@@ -586,17 +586,13 @@ section { padding: clamp(3rem, 6vw, 6rem) clamp(1.5rem, 4vw, 3rem); }
   border-radius: 20px;
   overflow: hidden;
   background: linear-gradient(135deg, #f5edf0, #faf8f5);
-  aspect-ratio: 4/3;
   display: flex;
-  align-items: center;
-  justify-content: center;
   box-shadow: 0 20px 60px rgba(222, 135, 205, 0.15);
   position: relative;
 }
 .about-photo {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
   image-orientation: none;
   border-radius: 20px;
 }
@@ -1640,7 +1636,6 @@ footer p { font-size: .85rem; font-weight: 300; }
 
   /* About */
   .about-grid { gap: 1.5rem; }
-  .about-image { aspect-ratio: 3/2; }
   .about-text h3 { font-size: 1.4rem; }
   .about-stats { flex-direction: column; gap: 1rem; }
   .stat { display: flex; align-items: baseline; gap: .6rem; }
