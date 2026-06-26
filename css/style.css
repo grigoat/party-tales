@@ -78,7 +78,6 @@ html { scroll-behavior: smooth; }
 body {
   font-family: var(--font-sans);
   color: var(--color-text);
-  overflow-x: hidden;
   overflow-wrap: break-word;
   background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
