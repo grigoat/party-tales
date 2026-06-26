@@ -612,7 +612,7 @@ document.addEventListener('DOMContentLoaded', function() {
       keepPlaying(existingEl);
 
       existingEl.src = 'images/videos/' + videoFiles[initialIdx];
-      existingEl.play().catch(function() {});
+      existingEl.play().catch(function() { retryPlay(existingEl); });
       existingEl.addEventListener('playing', function() { preloadNext(); }, { once: true });
 
       if (!started) {
