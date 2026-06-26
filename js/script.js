@@ -321,6 +321,16 @@ document.addEventListener('DOMContentLoaded', function() {
       item.className = 'gallery-item reveal';
       var cat = galleryCat[file];
       if (cat) item.setAttribute('data-category', cat);
+
+      var toWebP = function(f) { return f.replace(/\.(jpg|jpeg|JPG|JPEG)$/, '.webp'); };
+      var webpFile = toWebP(file);
+
+      var picture = document.createElement('picture');
+      var source = document.createElement('source');
+      source.srcset = 'images/gallery/' + webpFile;
+      source.type = 'image/webp';
+      picture.appendChild(source);
+
       var img = document.createElement('img');
       img.src = 'images/gallery/' + file;
       img.alt = 'Фото';
@@ -334,8 +344,10 @@ document.addEventListener('DOMContentLoaded', function() {
           openLightbox(idxEl);
         });
       })(img, idx);
+      picture.appendChild(img);
+
       item.innerHTML = '<div class="gallery-overlay"><span class="gallery-overlay-label" data-i18n="gallery.img.label">View</span><span class="gallery-overlay-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>';
-      item.insertBefore(img, item.firstChild);
+      item.insertBefore(picture, item.firstChild);
       return item;
     }
 
@@ -433,6 +445,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var currentMode = '';
     var singleSlot = null;
     var slots = [];
+    var initObserver = null;
 
     function pickNext(current, used) {
       if (currentMode === 'single') return (current + 1) % videoFiles.length;
@@ -462,6 +475,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
       var slot = { active: existingEl, buffer: buffer, idx: initialIdx };
 
+      function retryPlay(el) {
+        if (!el.paused) return;
+        el.play().catch(function() {
+          setTimeout(function() { retryPlay(el); }, 500);
+        });
+      }
+
+      function keepPlaying(el) {
+        el.addEventListener('waiting', function() {
+          setTimeout(function() { retryPlay(el); }, 300);
+        });
+      }
+
       function swap() {
         var newIdx = pickNext(slot.idx, slots.map(function(s) { return s.idx; }));
         slot.idx = newIdx;
@@ -475,28 +501,42 @@ document.addEventListener('DOMContentLoaded', function() {
           b.play().catch(function() {});
           a.style.opacity = '0';
           a.style.pointerEvents = 'none';
+          a.style.visibility = 'hidden';
 
           a.removeEventListener('ended', swap);
           a.removeEventListener('error', swap);
           b.addEventListener('ended', swap);
           b.addEventListener('error', swap);
 
+          keepPlaying(b);
+
           slot.active = b;
           slot.buffer = a;
 
-          if (!b.paused && b.readyState >= 3) {
-            preloadNext();
-          } else {
-            b.addEventListener('playing', function() { preloadNext(); }, { once: true });
-          }
+          preloadNext();
         };
 
-        if (b.readyState >= 2) {
+        if (b.readyState >= 4) {
           commit();
+        } else if (b.readyState >= 2) {
+          var onCanPlay = function() {
+            b.removeEventListener('error', onFail);
+            commit();
+          };
+          var onFail = function() {
+            b.removeEventListener('canplay', onCanPlay);
+            var retryIdx = pickNext(slot.idx, slots.map(function(s) { return s.idx; }));
+            slot.idx = retryIdx;
+            b.src = 'images/videos/' + videoFiles[retryIdx];
+            swap();
+          };
+          b.addEventListener('canplay', onCanPlay, { once: true });
+          b.addEventListener('error', onFail, { once: true });
         } else {
           var onReady = function() {
             b.removeEventListener('error', onFail);
-            commit();
+            var onCanPlay2 = function() { commit(); };
+            b.addEventListener('canplay', onCanPlay2, { once: true });
           };
           var onFail = function() {
             b.removeEventListener('loadeddata', onReady);
@@ -517,6 +557,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       existingEl.addEventListener('ended', swap);
       existingEl.addEventListener('error', swap);
+      keepPlaying(existingEl);
 
       existingEl.src = 'images/videos/' + videoFiles[initialIdx];
       existingEl.play().catch(function() {});
@@ -535,6 +576,7 @@ document.addEventListener('DOMContentLoaded', function() {
         singleSlot.active.pause();
         singleSlot.active.src = '';
         singleSlot.active.removeAttribute('style');
+        singleSlot.active.removeAttribute('class');
         singleSlot.active.className = 'hero-video-single';
         singleSlot.active.id = 'heroVideoSingle';
         singleSlot.buffer.pause();
@@ -546,6 +588,7 @@ document.addEventListener('DOMContentLoaded', function() {
         slot.active.pause();
         slot.active.src = '';
         slot.active.removeAttribute('style');
+        slot.active.removeAttribute('class');
         slot.active.className = 'hero-video';
         slot.buffer.pause();
         slot.buffer.src = '';
@@ -585,23 +628,40 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    initVideoMode();
+    var heroObserver = new IntersectionObserver(function(entries) {
+      if (entries[0].isIntersecting) {
+        heroObserver.disconnect();
+        initVideoMode();
 
-    var resizeTimer;
-    window.addEventListener('resize', function() {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(initVideoMode, 200);
-    });
+        var resizeTimer;
+        window.addEventListener('resize', function() {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(initVideoMode, 200);
+        });
 
-    document.addEventListener('click', function() {
-      if (currentMode === 'single' && singleSlot) {
-        if (singleSlot.active.paused) singleSlot.active.play().catch(function() {});
-      } else {
-        slots.forEach(function(slot) {
-          if (slot.active.paused) slot.active.play().catch(function() {});
+        document.addEventListener('click', function() {
+          if (currentMode === 'single' && singleSlot && singleSlot.active.paused) {
+            singleSlot.active.play().catch(function() {});
+          } else {
+            slots.forEach(function(slot) {
+              if (slot.active.paused) slot.active.play().catch(function() {});
+            });
+          }
+        });
+
+        document.addEventListener('visibilitychange', function() {
+          if (document.hidden) return;
+          if (currentMode === 'single' && singleSlot && singleSlot.active.paused) {
+            singleSlot.active.play().catch(function() {});
+          } else {
+            slots.forEach(function(slot) {
+              if (slot.active.paused) slot.active.play().catch(function() {});
+            });
+          }
         });
       }
-    });
+    }, { threshold: 0 });
+    heroObserver.observe(heroVideoBg);
 
     setTimeout(function() {
       heroVideoBg.style.opacity = '1';
@@ -777,6 +837,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  // Toast helper
+  var toast = document.getElementById('toast');
+  function showToast(msg, isError) {
+    if (!toast) return;
+    var textEl = toast.querySelector('.toast-text');
+    if (textEl) textEl.textContent = msg;
+    toast.classList.remove('toast-error');
+    if (isError) toast.classList.add('toast-error');
+    toast.classList.add('show');
+    setTimeout(function() { toast.classList.remove('show'); }, 4000);
+  }
+
   // Contact form
   var contactForm = document.getElementById('contactForm');
   if (contactForm) {
@@ -799,7 +871,6 @@ document.addEventListener('DOMContentLoaded', function() {
     var commentInput = document.getElementById('formComment');
     var nameError = document.getElementById('nameError');
     var phoneError = document.getElementById('phoneError');
-    var toast = document.getElementById('toast');
     var backendUrl = (typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'http://localhost:5000') + '/api/lead';
 
     var countries = {
@@ -894,78 +965,103 @@ document.addEventListener('DOMContentLoaded', function() {
       phoneInput.focus();
     });
 
-    function postLead(data) {
+    var submitBtn = contactForm.querySelector('.btn[type="submit"]');
+    var btnOriginalText = submitBtn ? submitBtn.textContent : '';
+
+    function setButtonLoading(loading) {
+      if (!submitBtn) return;
+      if (loading) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = '...';
+      } else {
+        submitBtn.disabled = false;
+        submitBtn.textContent = btnOriginalText;
+      }
+    }
+
+    function setButtonSuccess() {
+      if (!submitBtn) return;
+      submitBtn.disabled = true;
+      submitBtn.textContent = '✓ ' + btnOriginalText;
+      setTimeout(function() {
+        submitBtn.disabled = false;
+        submitBtn.textContent = btnOriginalText;
+      }, 3000);
+    }
+
+    function postLead(data, onSuccess, onError) {
       var xhr = new XMLHttpRequest();
       xhr.open('POST', backendUrl, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.onload = function() {
         if (xhr.status >= 200 && xhr.status < 300) {
-          contactForm.reset();
+          onSuccess();
+        } else {
+          onError();
         }
       };
       xhr.onerror = function() {
-        console.error('Network error sending lead');
+        onError();
       };
       xhr.send(JSON.stringify(data));
+    }
+
+    function focusFirstError() {
+      var fields = [
+        { el: nameInput, valid: validateName },
+        { el: phoneInput, valid: validatePhone }
+      ];
+      for (var i = 0; i < fields.length; i++) {
+        var f = fields[i];
+        if (!f.valid()) {
+          f.el.focus();
+          f.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
+      }
     }
 
     contactForm.addEventListener('submit', function(e) {
       e.preventDefault();
       var isNameValid = validateName();
       var isPhoneValid = validatePhone();
-      if (isNameValid && isPhoneValid) {
-        var cfg = getCountry();
-        var fullPhone = cfg.code + ' ' + phoneInput.value.trim();
-        postLead({
-          name: nameInput.value.trim(),
-          phone: phoneInput.value.trim(),
-          country: cfg.code,
-          event_type: typeSelect.value || typeSelect.options[typeSelect.selectedIndex].text,
-          comment: commentInput.value.trim(),
-          page_url: window.location.href,
-          language: typeof currentLang !== 'undefined' ? currentLang : 'de'
-        });
-        contactForm.reset();
-        if (typeSelect) typeSelect.selectedIndex = 0;
-        if (toast) {
-          var t = translations[currentLang];
-          var thanks = (t && t['toast.thanks']) || 'Спасибо! Мы свяжемся с вами по номеру {phone}';
-          toast.innerHTML = thanks.replace('{phone}', fullPhone);
-          toast.classList.add('show');
-          setTimeout(function() { toast.classList.remove('show'); }, 4000);
-        }
-  }
-});
-
-  }
-
-  // ── Custom cursor follower (desktop only) ──
-  if (window.innerWidth > 1024 && !window.matchMedia('(pointer: coarse)').matches) {
-    var cursor = document.createElement('div');
-    cursor.className = 'cursor-follower';
-    document.body.appendChild(cursor);
-    var posX = -100, posY = -100, mouseX = 0, mouseY = 0;
-    document.addEventListener('mousemove', function(e) {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-    });
-    function followCursor() {
-      posX += (mouseX - posX) * 0.3;
-      posY += (mouseY - posY) * 0.3;
-      cursor.style.transform = 'translate(' + posX + 'px, ' + posY + 'px)';
-      requestAnimationFrame(followCursor);
-    }
-    followCursor();
-    var interactive = 'a, button, [role="button"], select, input, textarea, .btn, .service-card-sq, .gallery-item, .testimonial-card, .service-card, .value-card, .stat-card, .filter-btn, .nav-links a, .logo, .social-links a, .back-to-top, .lang-btn, .lang-dropdown button, .lang-item';
-    document.addEventListener('mouseover', function(e) {
-      var t = e.target.closest(interactive);
-      if (t && t.closest('.modal-overlay')) {
-        cursor.classList.remove('cursor-hover');
+      if (!isNameValid || !isPhoneValid) {
+        focusFirstError();
         return;
       }
-      cursor.classList.toggle('cursor-hover', !!t);
+
+      var cfg = getCountry();
+      var fullPhone = cfg.code + ' ' + phoneInput.value.trim();
+      var data = {
+        name: nameInput.value.trim(),
+        phone: phoneInput.value.trim(),
+        country: cfg.code,
+        event_type: typeSelect.value || typeSelect.options[typeSelect.selectedIndex].text,
+        comment: commentInput.value.trim(),
+        page_url: window.location.href,
+        language: typeof currentLang !== 'undefined' ? currentLang : 'de'
+      };
+
+      setButtonLoading(true);
+
+      postLead(data, function() {
+        contactForm.reset();
+        if (typeSelect) typeSelect.selectedIndex = 0;
+        var t = translations[currentLang];
+        var msg = (t && t['toast.thanks']) || 'Спасибо! Мы свяжемся с вами по номеру {phone}';
+        showToast(msg.replace('{phone}', fullPhone), false);
+        setButtonSuccess();
+      }, function() {
+        var t = translations[currentLang];
+        var msg = (t && t['toast.error']) || 'Ошибка. Попробуйте позже.';
+        showToast(msg, true);
+        setButtonLoading(false);
+      });
     });
+
   }
+
+
 
   // ── Magnetic buttons ──
   document.querySelectorAll('.btn, .filter-btn').forEach(function(btn) {
@@ -988,7 +1084,6 @@ document.addEventListener('DOMContentLoaded', function() {
   var reviewModalClose = document.getElementById('reviewModalClose');
   var reviewForm = document.getElementById('reviewForm');
   var reviewRating = document.getElementById('reviewRating');
-  var toast = document.getElementById('toast');
 
   if (reviewBtn && reviewModal) {
     var reviewPlaceholders = {
@@ -1079,11 +1174,12 @@ document.addEventListener('DOMContentLoaded', function() {
         reviewModal.classList.remove('open');
         var lang = typeof currentLang !== 'undefined' ? currentLang : 'de';
         var t = typeof translations !== 'undefined' ? translations[lang] : null;
-        toast.innerHTML = err
-          ? ((t && t['toast.error']) || 'O&shy;шибка. По&shy;про&shy;буй&shy;те поз&shy;же.')
-          : ((t && t['toast.review']) || 'Спаси&shy;бо! От&shy;зыв от&shy;прав&shy;лен на мо&shy;де&shy;ра&shy;цию.');
-        toast.classList.add('show');
-        setTimeout(function() { toast.classList.remove('show'); }, 4000);
+        showToast(
+          err
+            ? ((t && t['toast.error']) || 'Ошибка. Попробуйте позже.')
+            : ((t && t['toast.review']) || 'Спасибо! Отзыв отправлен на модерацию.'),
+          err
+        );
       }
       xhr.onload = function() {
         done(xhr.status < 200 || xhr.status >= 300);

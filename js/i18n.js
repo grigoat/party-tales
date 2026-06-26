@@ -852,6 +852,7 @@ function updateLinks(lang) {
 }
 
 function applyLanguage(lang) {
+  if (['de','ru','en'].indexOf(lang) === -1) return;
   currentLang = lang;
   langStore.set('partyTalesLang', lang);
   updateURL(lang);
@@ -862,6 +863,7 @@ function applyLanguage(lang) {
     bc.close();
   } catch(e) {}
   var t = translations[lang];
+  if (!t) return;
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
     var key = el.getAttribute('data-i18n');
     if (t[key] !== undefined) {
@@ -917,7 +919,11 @@ function initLanguage() {
   applyLanguage(lang);
 }
 
-initLanguage();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initLanguage);
+} else {
+  initLanguage();
+}
 
 var langItem = document.querySelector('.lang-item');
 if (langItem) {
@@ -960,7 +966,7 @@ if (langSelect) {
 }
 
 window.addEventListener('storage', function(e) {
-  if (e.key === 'partyTalesLang' && e.newValue && e.newValue !== currentLang) {
+  if (e.key === 'partyTalesLang' && e.newValue && e.newValue !== currentLang && ['de','ru','en'].indexOf(e.newValue) !== -1) {
     applyLanguage(e.newValue);
   }
 });
@@ -968,7 +974,7 @@ window.addEventListener('storage', function(e) {
 try {
   var bc = new BroadcastChannel('partyTalesLang');
   bc.onmessage = function(e) {
-    if (e.data && e.data !== currentLang) {
+    if (e.data && e.data !== currentLang && ['de','ru','en'].indexOf(e.data) !== -1) {
       applyLanguage(e.data);
     }
   };
