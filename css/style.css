@@ -1162,13 +1162,17 @@ select, textarea, input { font-size: 16px !important; }
   display: flex;
   gap: 2rem;
   margin-top: 3rem;
-  overflow: hidden;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
   padding-bottom: 1rem;
   outline: none;
+  scrollbar-width: none;
 }
+.testimonials-slider::-webkit-scrollbar { display: none; }
 .testimonial-card {
   min-width: 380px;
-  flex-shrink: 0;
+  flex: 0 0 auto;
   scroll-snap-align: start;
   background: var(--color-card);
   border-radius: 20px;
@@ -1502,6 +1506,8 @@ footer p { font-size: .85rem; font-weight: 300; }
 /* Mobile: 320–767 */
 @media (max-width: 767px) {
   /* Navigation */
+  nav { position: sticky; top: 0; padding: .6rem 1rem; background: rgba(250,248,245,.95); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+  nav.scrolled { padding: .6rem 1rem; }
   .nav-links {
     position: fixed; top: 0; right: -100%;
     width: 80%; max-width: 300px; height: 100dvh; height: 100svh;
@@ -1518,6 +1524,8 @@ footer p { font-size: .85rem; font-weight: 300; }
     overflow-y: auto;
   }
   .nav-links.open { right: 0; }
+  nav:not(.scrolled) .nav-toggle span,
+  .nav-toggle span { background: var(--color-text); }
   .nav-toggle {
     display: flex;
     z-index: 1001;
@@ -1526,6 +1534,7 @@ footer p { font-size: .85rem; font-weight: 300; }
     align-items: center;
     justify-content: center;
   }
+  .nav-hero:not(.scrolled) .nav-links a,
   .nav-links a {
     font-size: 1.1rem;
     padding: .6rem 1rem;
@@ -1554,7 +1563,7 @@ footer p { font-size: .85rem; font-weight: 300; }
   }
 
   /* Hero - Single video on mobile */
-  .hero { padding: 4rem 1rem 1.5rem; min-height: 70dvh; }
+  .hero { padding: 3rem 1rem 1.5rem; min-height: 70dvh; }
   .hero-content { max-width: 100%; }
   .hero-eyebrow { font-size: .6rem; letter-spacing: 2px; padding: .2rem .7rem; margin-bottom: .8rem; }
   .hero h1 { font-size: clamp(1.6rem, 6vw, 2.2rem); margin-bottom: .6rem; }
@@ -1572,8 +1581,13 @@ footer p { font-size: .85rem; font-weight: 300; }
   .experience-item p { max-width: 100%; }
 
   /* Services preview - stacked on mobile */
-  .services-preview-grid { grid-template-columns: 1fr; gap: 1rem; }
-  .service-preview-card { padding: 1.8rem 1.2rem; }
+  .services-preview-grid { grid-template-columns: 1fr 1fr; gap: .75rem; }
+  .service-preview-card { padding: 1.2rem 1rem; aspect-ratio: 1; gap: .6rem; justify-content: center; text-align: center; align-items: center; }
+  .service-preview-card .service-preview-body { align-items: center; }
+  .service-preview-card .service-preview-summary { display: none; }
+  .service-preview-icon { width: 36px; height: 36px; }
+  .service-preview-body h3 { font-size: .95rem; }
+  .service-preview-cta { font-size: .7rem; }
 
   /* Services with images - stacked on mobile */
   .services-grid-images { grid-template-columns: 1fr; gap: 1.2rem; }
@@ -1586,7 +1600,7 @@ footer p { font-size: .85rem; font-weight: 300; }
   section { padding: 2rem 1rem; }
 
   /* Page hero */
-  .page-hero { padding: 4rem 1rem 1.5rem; }
+  .page-hero { padding: 1rem 1rem 1.5rem; }
   .page-hero h1 { font-size: clamp(1.4rem, 6vw, 1.8rem); }
   .page-hero-desc { font-size: clamp(.8rem, 3.5vw, .9rem); }
 
@@ -1628,7 +1642,7 @@ footer p { font-size: .85rem; font-weight: 300; }
   .gallery-overlay-icon { transform: none; }
 
   /* Testimonials */
-  .testimonial-card { min-width: 240px; padding: 1.2rem; }
+  .testimonial-card { min-width: 75vw; flex: 0 0 75vw; padding: 1.2rem; }
   .testimonial-card blockquote { font-size: .85rem; }
   .testimonial-card-top { gap: .6rem; margin-bottom: .8rem; }
   .testimonial-avatar { width: 36px; height: 36px; }
@@ -1688,7 +1702,7 @@ footer p { font-size: .85rem; font-weight: 300; }
   .hero-content { max-width: 100%; }
   .hero-video-overlay { background: linear-gradient(180deg, rgba(26,22,24,.78) 0%, rgba(26,22,24,.7) 30%, rgba(26,22,24,.7) 100%); }
   section { padding: 1.5rem .75rem; }
-  .page-hero { padding: 3.5rem .75rem 1rem; }
+  .page-hero { padding: 1.5rem .75rem 1rem; }
   .page-hero h1 { font-size: clamp(1.2rem, 3vw, 1.5rem); }
   .page-hero-desc { font-size: .75rem; }
   .gallery-grid { column-count: 3; }
@@ -1732,7 +1746,7 @@ footer p { font-size: .85rem; font-weight: 300; }
 }
 /* Small phones: 320–374 */
 @media (max-width: 374px) {
-  .hero { padding: 3.5rem .75rem 1rem; min-height: 60dvh; }
+  .hero { padding: 2rem .75rem 1rem; min-height: 60dvh; }
   .hero h1 { font-size: clamp(1.3rem, 6vw, 1.6rem); }
   .hero p { font-size: .75rem; }
   .hero-buttons .btn,
@@ -1742,7 +1756,7 @@ footer p { font-size: .85rem; font-weight: 300; }
   .gallery-item { margin-bottom: .4rem; }
   .testimonial-card { min-width: 200px; padding: 1rem; }
   section { padding: 1.5rem .75rem; }
-  .page-hero { padding: 3.5rem .75rem 1rem; }
+  .page-hero { padding: 1.5rem .75rem 1rem; }
   .nav-links { width: 85%; max-width: 260px; padding: 1rem; gap: 1.2rem; }
   .nav-links a { font-size: .95rem; padding: .4rem .6rem; }
   footer { padding: 1.5rem .75rem; }
