@@ -19,6 +19,8 @@
   <link rel="icon" type="image/png" href="images/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://party-tales-production.up.railway.app">
+  <link rel="dns-prefetch" href="https://party-tales-production.up.railway.app">
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap"></noscript>
   <link rel="preload" as="image" href="images/logo.webp" fetchpriority="high">
@@ -79,11 +81,11 @@
 <section class="hero">
   <div class="hero-video-bg" id="heroVideoBg">
     <div class="hero-video-wrapper">
-      <video class="hero-video-single" id="heroVideoSingle" muted playsinline preload="auto"></video>
+      <video class="hero-video-single" id="heroVideoSingle" muted playsinline preload="metadata"></video>
       <div class="hero-video-grid" id="heroVideoGrid">
-        <video class="hero-video" id="heroVideo0" data-slot="0" muted playsinline preload="auto"></video>
-        <video class="hero-video" id="heroVideo1" data-slot="1" muted playsinline preload="auto"></video>
-        <video class="hero-video" id="heroVideo2" data-slot="2" muted playsinline preload="auto"></video>
+        <video class="hero-video" id="heroVideo0" data-slot="0" muted playsinline preload="metadata"></video>
+        <video class="hero-video" id="heroVideo1" data-slot="1" muted playsinline preload="metadata"></video>
+        <video class="hero-video" id="heroVideo2" data-slot="2" muted playsinline preload="metadata"></video>
       </div>
     </div>
     <div class="hero-video-overlay"></div>
@@ -213,7 +215,7 @@
     <p class="section-desc mx-auto reveal" data-i18n="index.gallery.desc" style="margin-bottom:2.5rem">Every project tells a different story. Here are a few of our favourites — from intimate family celebrations to large-scale corporate events.</p>
     <div class="gallery-grid">
       <div class="gallery-item reveal gallery-item-featured" style="--i:0">
-        <img src="images/gallery/IMG_0312.jpg" alt="Фотозона" loading="lazy" data-i18n-aria="index.gallery.label1">
+        <img src="images/gallery/IMG_0312.jpg" alt="Фотозона" loading="lazy" width="800" height="600" data-i18n-aria="index.gallery.label1">
         <div class="gallery-item-overlay">
           <span class="gallery-item-label" data-i18n="index.gallery.label1">Photo backdrop</span>
           <span class="gallery-item-arrow">
@@ -224,7 +226,7 @@
         </div>
       </div>
       <div class="gallery-item reveal" style="--i:1">
-        <img src="images/gallery/IMG_1255.jpg" alt="Декор шарами" loading="lazy" data-i18n-aria="index.gallery.label2">
+        <img src="images/gallery/IMG_1255.jpg" alt="Декор шарами" loading="lazy" width="800" height="600" data-i18n-aria="index.gallery.label2">
         <div class="gallery-item-overlay">
           <span class="gallery-item-label" data-i18n="index.gallery.label2">Balloon decor</span>
           <span class="gallery-item-arrow">
@@ -235,7 +237,7 @@
         </div>
       </div>
       <div class="gallery-item reveal" style="--i:2">
-        <img src="images/gallery/IMG_4208.jpg" alt="Композиция" loading="lazy" data-i18n-aria="index.gallery.label3">
+        <img src="images/gallery/IMG_4208.jpg" alt="Композиция" loading="lazy" width="800" height="600" data-i18n-aria="index.gallery.label3">
         <div class="gallery-item-overlay">
           <span class="gallery-item-label" data-i18n="index.gallery.label3">Composition</span>
           <span class="gallery-item-arrow">
@@ -246,7 +248,7 @@
         </div>
       </div>
       <div class="gallery-item reveal" style="--i:3">
-        <img src="images/gallery/IMG_7201.jpg" alt="Оформление" loading="lazy" data-i18n-aria="index.gallery.label4">
+        <img src="images/gallery/IMG_7201.jpg" alt="Оформление" loading="lazy" width="800" height="600" data-i18n-aria="index.gallery.label4">
         <div class="gallery-item-overlay">
           <span class="gallery-item-label" data-i18n="index.gallery.label4">Design</span>
           <span class="gallery-item-arrow">

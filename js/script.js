@@ -336,13 +336,33 @@ document.addEventListener('DOMContentLoaded', function() {
       img.alt = 'Фото';
       img.loading = 'lazy';
       img.setAttribute('data-i18n-aria', 'gallery.img.alt');
+
+      var loadTimer = setTimeout(function() {
+        if (!img.classList.contains('loaded')) {
+          item.classList.add('gallery-error');
+        }
+      }, 10000);
+
       img.onload = function() {
+        clearTimeout(loadTimer);
         this.classList.add('loaded');
         if (this.naturalWidth && this.naturalHeight) {
-          this.closest('.gallery-item').style.aspectRatio = this.naturalWidth / this.naturalHeight;
+          var closest = this.closest('.gallery-item');
+          if (closest) closest.style.aspectRatio = this.naturalWidth / this.naturalHeight;
         }
       };
-      if (img.complete) img.classList.add('loaded');
+      img.onerror = function() {
+        clearTimeout(loadTimer);
+        this.classList.add('loaded');
+        item.classList.add('gallery-error');
+      };
+      if (img.complete) {
+        if (img.naturalWidth) {
+          img.classList.add('loaded');
+        } else {
+          item.classList.add('gallery-error');
+        }
+      }
       (function(imgEl, idxEl) {
         imgEl.addEventListener('click', function() {
           currentIndex = idxEl;
@@ -351,16 +371,32 @@ document.addEventListener('DOMContentLoaded', function() {
       })(img, idx);
       picture.appendChild(img);
 
-      item.innerHTML = '<div class="gallery-overlay"><span class="gallery-overlay-label" data-i18n="gallery.img.label">View</span><span class="gallery-overlay-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>';
+      item.innerHTML = '<div class="gallery-error-msg">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">' +
+        '<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h0" stroke-linecap="round"/></svg>' +
+        '<span>Failed to load</span></div>' +
+        '<div class="gallery-overlay"><span class="gallery-overlay-label" data-i18n="gallery.img.label">View</span><span class="gallery-overlay-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>';
       item.insertBefore(picture, item.firstChild);
       return item;
     }
 
     var fragment = document.createDocumentFragment();
+    var totalGalleryItems = galleryFiles.length;
     for (var i = 0; i < galleryFiles.length; i++) {
       fragment.appendChild(createGalleryItem(galleryFiles[i], i));
     }
     galleryGrid.appendChild(fragment);
+
+    // Force hide any ongoing loader after max timeout
+    setTimeout(function() {
+      galleryGrid.querySelectorAll('.gallery-item img').forEach(function(img) {
+        if (!img.classList.contains('loaded')) {
+          img.classList.add('loaded');
+          var parent = img.closest('.gallery-item');
+          if (parent) parent.classList.add('gallery-error');
+        }
+      });
+    }, 15000);
 
     if (typeof revealObserver !== 'undefined' && revealObserver) {
       galleryGrid.querySelectorAll('.gallery-item.reveal:not(.visible)').forEach(function(el) {
@@ -368,7 +404,6 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
 
-    // Apply active filter to initial items
     if (galleryFilters) {
       var activeBtn = galleryFilters.querySelector('.filter-btn.active');
       if (activeBtn) {
@@ -378,6 +413,40 @@ document.addEventListener('DOMContentLoaded', function() {
             if (item.getAttribute('data-category') !== activeFilter) {
               item.classList.add('hidden');
             }
+          });
+        }
+      }
+    }
+  }
+
+  if (galleryFilters) {
+    galleryFilters.addEventListener('click', function(e) {
+      var btn = e.target.closest('.filter-btn');
+      if (!btn) return;
+      var filter = btn.getAttribute('data-filter');
+      galleryFilters.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      galleryGrid.querySelectorAll('.gallery-item').forEach(function(item) {
+        if (filter === 'all' || item.getAttribute('data-category') === filter) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+    });
+  }
+
+  // Form inputs — scroll into view on focus (iOS keyboard fix)
+  document.addEventListener('focusin', function(e) {
+    var tag = e.target && e.target.tagName;
+    if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') return;
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+      setTimeout(function() {
+        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+    }
+  });
+
   // Input focus → курсор в конец (кроме повторных кликов внутри поля)
   document.addEventListener('mousedown', function(e) {
     var tag = e.target && e.target.tagName;
@@ -395,28 +464,6 @@ document.addEventListener('DOMContentLoaded', function() {
     delete el.dataset.focusEnd;
     if (el.setSelectionRange) el.setSelectionRange(el.value.length, el.value.length);
   });
-        });
-      }
-    }
-  }
-  // Lightbox already attached per-image in createGalleryItem
-  if (galleryFilters) {
-    galleryFilters.addEventListener('click', function(e) {
-      var btn = e.target.closest('.filter-btn');
-      if (!btn) return;
-      var filter = btn.getAttribute('data-filter');
-      galleryFilters.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
-      btn.classList.add('active');
-      galleryGrid.querySelectorAll('.gallery-item').forEach(function(item) {
-        if (filter === 'all' || item.getAttribute('data-category') === filter) {
-          item.classList.remove('hidden');
-        } else {
-          item.classList.add('hidden');
-        }
-      });
-    });
-  }
-  }
   // Per-image click handler already attached in createGalleryItem
   if (typeof applyLanguage === 'function') applyLanguage(currentLang);
 
@@ -466,7 +513,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function createSlot(container, existingEl, initialIdx) {
       existingEl.muted = true;
       existingEl.playsInline = true;
-      existingEl.preload = 'auto';
+      existingEl.preload = 'metadata';
       existingEl.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover';
 
       var buffer = document.createElement('video');
@@ -673,16 +720,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 3000);
   }
 
-  // Preloader
-  window.addEventListener('load', function() {
-    var preloader = document.getElementById('preloader');
-    if (preloader) preloader.classList.add('hidden');
-  });
-  // Fallback if load already fired
-  if (document.readyState === 'complete') {
-    var preloader = document.getElementById('preloader');
-    if (preloader) preloader.classList.add('hidden');
+  // Preloader — hide once page is interactive, not waiting for all images
+  var preloaderEl = document.getElementById('preloader');
+
+  function hidePreloader() {
+    if (preloaderEl) preloaderEl.classList.add('hidden');
   }
+
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    // Give a brief moment for initial render
+    setTimeout(hidePreloader, 100);
+  } else {
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(hidePreloader, 100);
+    });
+  }
+  // Safety timeout — hide preloader after 5s no matter what
+  setTimeout(hidePreloader, 5000);
 
   // Navbar scroll
   var navbar = document.getElementById('navbar');
@@ -756,6 +810,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var reviewXhr = new XMLHttpRequest();
     var backendBase = typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'http://localhost:5000';
     reviewXhr.open('GET', backendBase + '/api/reviews', true);
+    reviewXhr.timeout = 8000;
     reviewXhr.onload = function() {
       if (reviewXhr.status < 200 || reviewXhr.status >= 300) return;
       var reviews;
@@ -781,6 +836,8 @@ document.addEventListener('DOMContentLoaded', function() {
       centerSliderPaddings();
       updateTestTrack();
     };
+    reviewXhr.onerror = function() { /* silently fail - not critical */ };
+    reviewXhr.ontimeout = function() { /* silently fail */ };
     reviewXhr.send();
   }
 
@@ -972,25 +1029,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var submitBtn = contactForm.querySelector('.btn[type="submit"]');
     var btnOriginalText = submitBtn ? submitBtn.textContent : '';
+    var btnInner = null;
+    if (submitBtn && !submitBtn.querySelector('.btn-text')) {
+      btnInner = document.createElement('span');
+      btnInner.className = 'btn-text';
+      btnInner.textContent = btnOriginalText;
+      submitBtn.textContent = '';
+      submitBtn.appendChild(btnInner);
+    } else if (submitBtn) {
+      btnInner = submitBtn.querySelector('.btn-text');
+    }
 
     function setButtonLoading(loading) {
-      if (!submitBtn) return;
+      if (!submitBtn || !btnInner) return;
       if (loading) {
         submitBtn.disabled = true;
-        submitBtn.textContent = '...';
+        btnInner.textContent = '...';
       } else {
         submitBtn.disabled = false;
-        submitBtn.textContent = btnOriginalText;
+        btnInner.textContent = btnOriginalText;
       }
     }
 
     function setButtonSuccess() {
-      if (!submitBtn) return;
+      if (!submitBtn || !btnInner) return;
       submitBtn.disabled = true;
-      submitBtn.textContent = '✓ ' + btnOriginalText;
+      btnInner.textContent = '✓ ' + btnOriginalText;
       setTimeout(function() {
         submitBtn.disabled = false;
-        submitBtn.textContent = btnOriginalText;
+        btnInner.textContent = btnOriginalText;
       }, 3000);
     }
 
@@ -1068,18 +1135,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-  // ── Magnetic buttons ──
+  // ── Magnetic buttons (subtle, no layout shift) ──
   document.querySelectorAll('.btn, .filter-btn').forEach(function(btn) {
     btn.addEventListener('mousemove', function(e) {
       var rect = btn.getBoundingClientRect();
       var x = e.clientX - rect.left - rect.width / 2;
       var y = e.clientY - rect.top - rect.height / 2;
-      btn.style.transform = 'translate(' + (x * 0.2) + 'px, ' + (y * 0.2) + 'px)';
+      var shadowX = (x * 0.2).toFixed(1);
+      var shadowY = (y * 0.2).toFixed(1);
+      btn.style.setProperty('--mx', shadowX + 'px');
+      btn.style.setProperty('--my', shadowY + 'px');
+      btn.style.boxShadow = shadowX + ' ' + shadowY + ' 20px rgba(212,120,176,0.1)';
     });
     btn.addEventListener('mouseleave', function() {
-      btn.style.transform = '';
-      btn.style.transition = 'transform .4s cubic-bezier(0.16, 1, 0.3, 1)';
-      setTimeout(function() { btn.style.transition = ''; }, 400);
+      btn.style.boxShadow = '';
+      btn.style.setProperty('--mx', '0px');
+      btn.style.setProperty('--my', '0px');
     });
   });
 
