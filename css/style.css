@@ -597,6 +597,7 @@ section { padding: clamp(3rem, 6vw, 6rem) clamp(1.5rem, 4vw, 3rem); }
   width: 100%;
   height: 100%;
   object-fit: cover;
+  image-orientation: none;
   border-radius: 20px;
 }
 .about-text blockquote {
