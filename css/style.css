@@ -15,10 +15,9 @@
   --color-success: #4A9D7A;
 
   --font-sans: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  /* Headings need a real bold weight → keep Georgia (Instrument Serif ships 400/italic only) */
   --font-serif: Georgia, 'Times New Roman', serif;
-  /* Display serif for italic accents — realises the intended Instrument Sans + Serif pairing */
-  --font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  /* Elegant display serif for accent words & quotes (wide, refined, has Cyrillic) */
+  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -482,9 +481,9 @@ nav.scrolled + * .lang-dropdown { /* handled by data attribute */ }
 }
 .hero-emphasis {
   font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 400;
-  font-size: 1.04em;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 1.06em;
   color: var(--color-accent-light);
 }
 .hero p {
@@ -647,9 +646,10 @@ section { padding: clamp(3rem, 6vw, 6rem) clamp(1.5rem, 4vw, 3rem); }
   padding: 1rem 1.5rem;
   border-left: 3px solid var(--color-accent);
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: normal;
+  font-weight: 500;
   font-size: 1.15rem;
-  line-height: 1.55;
+  line-height: 1.5;
   color: var(--color-text);
   background: var(--color-bg-alt);
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
@@ -1325,11 +1325,11 @@ select, textarea, input { font-size: 16px !important; }
 
 .testimonial-card blockquote {
   font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 400;
+  font-style: normal;
+  font-weight: 500;
   color: var(--color-text);
-  line-height: 1.55;
-  font-size: 1.15rem;
+  line-height: 1.5;
+  font-size: 1.12rem;
 }
 
 /* ── Contact ── */
