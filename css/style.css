@@ -1689,7 +1689,7 @@ footer p { font-size: .85rem; font-weight: 300; }
   .experience-item p { max-width: 100%; }
 
   /* Services preview - stacked on mobile */
-  .services-preview-grid { grid-template-columns: 1fr 1fr; gap: .75rem; }
+  .services-preview-grid { grid-template-columns: 1fr 1fr; gap: .75rem; max-width: 320px; margin-left: auto; margin-right: auto; }
   .service-preview-card { padding: 1.2rem 1rem; aspect-ratio: 1; gap: .6rem; justify-content: center; text-align: center; align-items: center; }
   .service-preview-card .service-preview-body { align-items: center; }
   .service-preview-card .service-preview-summary { display: none; }
