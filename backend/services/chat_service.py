@@ -6,6 +6,7 @@ from telegram.messages import (
     format_chat_notification, chat_join_keyboard, escape, EMOJI_PERSON,
 )
 from config import CHAT_ID, TOKEN
+from services import ai_service
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +54,44 @@ def post_visitor_message(data):
 
     _notify_manager(session, text, is_new)
 
+    # While no human manager has joined, let the assistant keep the conversation
+    # going. Replies are stored as ordinary `manager` messages so the visitor
+    # sees them exactly like a real reply.
+    if not session.get('manager_chat_id'):
+        _ai_reply(session_id)
+
     return {'ok': True, 'session_id': session_id, 'message_id': msg_id}, 201
+
+
+def _ai_reply(session_id):
+    if not ai_service.is_available():
+        return
+    # Re-read the session: a manager may have joined between requests.
+    session = database.get_chat_session(session_id)
+    if not session or session.get('manager_chat_id'):
+        return
+    try:
+        history = database.get_chat_messages(
+            session_id, after_id=0, senders=('visitor', 'manager')
+        )
+        reply = ai_service.generate_reply(session, history)
+    except Exception as e:
+        logger.exception('AI reply error for session %s: %s', session_id, e)
+        return
+    if not reply:
+        return
+    # A manager might have joined while the model was thinking — don't double-reply.
+    session = database.get_chat_session(session_id)
+    if not session or session.get('manager_chat_id'):
+        return
+    database.add_chat_message(session_id, 'manager', reply)
+    # Keep the managers' group in the loop so a human can take over with context.
+    if TOKEN and CHAT_ID:
+        tg_send(
+            CHAT_ID,
+            f'{EMOJI_PERSON} <i>Авто-ответ гостю #{session_id}:</i> {escape(reply)}',
+            reply_markup=chat_join_keyboard(session_id),
+        )
 
 
 def _notify_manager(session, text, is_new):
