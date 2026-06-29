@@ -1,9 +1,14 @@
 import logging
 
-from database import get_leads, get_lead, update_lead_status, get_stats
+from database import (
+    get_leads, get_lead, update_lead_status, get_stats,
+    get_chat_session, get_chat_messages, set_session_manager, set_session_status,
+    set_manager_active, get_manager_active, clear_manager_active,
+)
 from telegram.client import tg_send, edit_message_text
 from telegram.messages import (
-    COMMANDS, format_lead_card, format_leads_list, format_review_card, format_stats, escape, EMOJI_ARROW
+    COMMANDS, format_lead_card, format_leads_list, format_review_card, format_stats, escape, EMOJI_ARROW,
+    format_chat_joined, chat_leave_keyboard, EMOJI_DOOR,
 )
 
 logger = logging.getLogger(__name__)
@@ -20,13 +25,64 @@ def parse_command(text):
 
 
 def handle_message(chat_id: int | str, text: str):
+    # If the manager is currently inside a website chat, plain text (anything
+    # that is not a /command) is relayed to that visitor.
+    if not text.startswith('/'):
+        active_sid = get_manager_active(chat_id)
+        if active_sid:
+            from services.chat_service import post_manager_message
+            if post_manager_message(active_sid, text):
+                return
+
     cmd, args = parse_command(text)
     if cmd:
         handle_command(cmd, args, chat_id)
 
 
+def _leave_chat(chat_id, message_id=None):
+    sid = get_manager_active(chat_id)
+    clear_manager_active(chat_id)
+    if sid:
+        from services.chat_service import add_system_message
+        add_system_message(sid, '__manager_left__')
+        tg_send(chat_id, f'{EMOJI_DOOR} Вы вышли из чата #{sid}. Новые сообщения снова придут уведомлением.')
+    else:
+        tg_send(chat_id, 'Вы сейчас не в чате.')
+
+
+def handle_chat_join(chat_id, session_id, message_id=None):
+    session = get_chat_session(session_id)
+    if not session:
+        tg_send(chat_id, f'Чат #{session_id} не найден.')
+        return
+    set_session_manager(session_id, chat_id)
+    set_manager_active(chat_id, session_id)
+
+    from services.chat_service import add_system_message
+    add_system_message(session_id, '__manager_joined__')
+
+    history = get_chat_messages(session_id, after_id=0, senders=('visitor', 'manager'))
+    text = format_chat_joined(session, history)
+    if message_id:
+        edit_message_text(chat_id, message_id, text, reply_markup=chat_leave_keyboard(session_id))
+    else:
+        tg_send(chat_id, text, reply_markup=chat_leave_keyboard(session_id))
+
+
 def handle_callback(chat_id: int | str, callback_data: str, message_id: int | None = None):
     cmd, args = parse_command(callback_data)
+
+    if cmd.startswith('chat_join_'):
+        try:
+            sid = int(cmd[len('chat_join_'):])
+        except ValueError:
+            return
+        handle_chat_join(chat_id, sid, message_id=message_id)
+        return
+
+    if cmd == 'chat_leave':
+        _leave_chat(chat_id, message_id=message_id)
+        return
 
     if cmd == 'leads':
         leads = get_leads(limit=10)
@@ -100,6 +156,10 @@ def handle_callback(chat_id: int | str, callback_data: str, message_id: int | No
 
 
 def handle_command(cmd: str, args: list, chat_id: int | str):
+    if cmd == '/leave':
+        _leave_chat(chat_id)
+        return
+
     if cmd == '/start':
         tg_send(chat_id, COMMANDS['/start'])
         return

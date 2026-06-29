@@ -9,6 +9,7 @@ from database import init_db
 from routes.api import api_bp
 from routes.webhook import webhook_bp
 from routes.frontend import frontend_bp
+from routes.chat import chat_bp
 from telegram.client import set_webhook
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
@@ -19,9 +20,15 @@ def create_app():
     app = Flask(__name__)
     CORS(app)
 
+    try:
+        init_db()
+    except Exception as e:
+        logger.error('init_db at startup failed: %s', e)
+
     app.register_blueprint(api_bp)
     app.register_blueprint(webhook_bp)
     app.register_blueprint(frontend_bp)
+    app.register_blueprint(chat_bp)
 
     @app.route('/health')
     def health():

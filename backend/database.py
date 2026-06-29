@@ -36,6 +36,46 @@ def init_db():
             ON leads(created_at DESC)
         ''')
 
+        # --- Live chat ---
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS chat_sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                visitor_id TEXT NOT NULL,
+                name TEXT DEFAULT '',
+                page_url TEXT DEFAULT '',
+                language TEXT DEFAULT '',
+                status TEXT DEFAULT 'waiting',
+                manager_chat_id TEXT DEFAULT '',
+                tg_message_id INTEGER,
+                created_at TEXT NOT NULL,
+                last_activity TEXT NOT NULL
+            )
+        ''')
+        conn.execute('''
+            CREATE INDEX IF NOT EXISTS idx_chat_sessions_visitor
+            ON chat_sessions(visitor_id)
+        ''')
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS chat_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id INTEGER NOT NULL,
+                sender TEXT NOT NULL,
+                text TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+        ''')
+        conn.execute('''
+            CREATE INDEX IF NOT EXISTS idx_chat_messages_session
+            ON chat_messages(session_id, id)
+        ''')
+        # Which chat session each manager (telegram chat) is currently replying to
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS manager_state (
+                chat_id TEXT PRIMARY KEY,
+                active_session_id INTEGER
+            )
+        ''')
+
 
 def add_lead(name, phone, country, event_type, comment, page_url='', language=''):
     created_at = datetime.utcnow().isoformat()
@@ -99,3 +139,98 @@ def get_stats():
             FROM leads
         ''').fetchone()
         return dict(row)
+
+
+# ============================ Live chat ============================
+
+def create_chat_session(visitor_id, name='', page_url='', language=''):
+    now = datetime.utcnow().isoformat()
+    with get_db() as conn:
+        cur = conn.execute(
+            'INSERT INTO chat_sessions (visitor_id, name, page_url, language, status, created_at, last_activity) '
+            "VALUES (?, ?, ?, ?, 'waiting', ?, ?)",
+            (visitor_id, name, page_url, language, now, now)
+        )
+        return cur.lastrowid
+
+
+def get_chat_session(session_id):
+    with get_db() as conn:
+        r = conn.execute('SELECT * FROM chat_sessions WHERE id = ?', (session_id,)).fetchone()
+        return dict(r) if r else None
+
+
+def touch_chat_session(session_id):
+    now = datetime.utcnow().isoformat()
+    with get_db() as conn:
+        conn.execute('UPDATE chat_sessions SET last_activity = ? WHERE id = ?', (now, session_id))
+
+
+def set_session_manager(session_id, manager_chat_id):
+    with get_db() as conn:
+        conn.execute(
+            "UPDATE chat_sessions SET manager_chat_id = ?, status = 'active' WHERE id = ?",
+            (str(manager_chat_id), session_id)
+        )
+
+
+def set_session_status(session_id, status):
+    with get_db() as conn:
+        conn.execute('UPDATE chat_sessions SET status = ? WHERE id = ?', (status, session_id))
+
+
+def set_session_tg_message(session_id, tg_message_id):
+    with get_db() as conn:
+        conn.execute('UPDATE chat_sessions SET tg_message_id = ? WHERE id = ?', (tg_message_id, session_id))
+
+
+def add_chat_message(session_id, sender, text):
+    now = datetime.utcnow().isoformat()
+    with get_db() as conn:
+        cur = conn.execute(
+            'INSERT INTO chat_messages (session_id, sender, text, created_at) VALUES (?, ?, ?, ?)',
+            (session_id, sender, text, now)
+        )
+        conn.execute('UPDATE chat_sessions SET last_activity = ? WHERE id = ?', (now, session_id))
+        return cur.lastrowid
+
+
+def get_chat_messages(session_id, after_id=0, senders=None):
+    with get_db() as conn:
+        if senders:
+            placeholders = ','.join('?' for _ in senders)
+            rows = conn.execute(
+                f'SELECT * FROM chat_messages WHERE session_id = ? AND id > ? '
+                f'AND sender IN ({placeholders}) ORDER BY id ASC',
+                (session_id, after_id, *senders)
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                'SELECT * FROM chat_messages WHERE session_id = ? AND id > ? ORDER BY id ASC',
+                (session_id, after_id)
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+
+def set_manager_active(chat_id, session_id):
+    with get_db() as conn:
+        conn.execute(
+            'INSERT INTO manager_state (chat_id, active_session_id) VALUES (?, ?) '
+            'ON CONFLICT(chat_id) DO UPDATE SET active_session_id = excluded.active_session_id',
+            (str(chat_id), session_id)
+        )
+
+
+def get_manager_active(chat_id):
+    with get_db() as conn:
+        r = conn.execute(
+            'SELECT active_session_id FROM manager_state WHERE chat_id = ?', (str(chat_id),)
+        ).fetchone()
+        return r['active_session_id'] if r else None
+
+
+def clear_manager_active(chat_id):
+    with get_db() as conn:
+        conn.execute(
+            'UPDATE manager_state SET active_session_id = NULL WHERE chat_id = ?', (str(chat_id),)
+        )

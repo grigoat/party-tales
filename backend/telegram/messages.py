@@ -10,6 +10,9 @@ EMOJI_CAL = '\U0001F4C5'
 EMOJI_CHART = '\U0001F4CA'
 EMOJI_WAVE = '\U0001F44B'
 EMOJI_ARROW = '\u2192'
+EMOJI_PERSON = '\U0001F464'
+EMOJI_SPEECH = '\U0001F4AC'
+EMOJI_DOOR = '\U0001F6AA'
 
 COMMANDS = {
     '/start': (
@@ -25,7 +28,10 @@ COMMANDS = {
         '/leads — свежие заявки\n'
         '/lead_N — детали заявки\n'
         '/status_N_new|contacted|closed — сменить статус\n'
-        '/stats — статистика'
+        '/stats — статистика\n'
+        '/leave — выйти из чата с гостем\n\n'
+        '💬 Когда гость пишет в чат на сайте, придёт уведомление с кнопкой '
+        '«Войти в переписку» — нажмите её и просто отвечайте сообщениями.'
     ),
 }
 
@@ -136,3 +142,58 @@ def format_review_card(lead):
         ]]
     }
     return text, reply_markup
+
+
+# ============================ Live chat ============================
+
+def format_chat_notification(session, first_text):
+    name = session.get('name') or 'Гость'
+    lines = [
+        f'<b>{EMOJI_SPEECH} Новый чат на сайте — #{session["id"]}</b>',
+        '',
+        f'{EMOJI_PERSON} <b>{escape(name)}:</b> {escape(first_text)}',
+        '',
+        f'{EMOJI_GLOBE} Язык: {escape(session.get("language") or "—")}',
+        f'{EMOJI_PUSH} Страница: {escape(session.get("page_url") or "—")}',
+        '',
+        'Нажмите кнопку, чтобы ответить гостю прямо отсюда.',
+    ]
+    return '\n'.join(lines)
+
+
+def chat_join_keyboard(session_id):
+    return {
+        'inline_keyboard': [[
+            {
+                'text': f'{EMOJI_SPEECH} Войти в переписку',
+                'callback_data': f'chat_join_{session_id}'
+            },
+        ]]
+    }
+
+
+def format_chat_joined(session, history):
+    name = session.get('name') or f'Гость #{session["id"]}'
+    lines = [
+        f'<b>{EMOJI_SPEECH} Вы в переписке с {escape(name)} (#{session["id"]})</b>',
+        '',
+    ]
+    if history:
+        for m in history:
+            who = 'Гость' if m['sender'] == 'visitor' else ('Вы' if m['sender'] == 'manager' else '•')
+            lines.append(f'<b>{who}:</b> {escape(m["text"])}')
+        lines.append('')
+    lines.append('✍️ Просто пишите сообщения — гость увидит их на сайте.')
+    lines.append('/leave — выйти из чата.')
+    return '\n'.join(lines)
+
+
+def chat_leave_keyboard(session_id):
+    return {
+        'inline_keyboard': [[
+            {
+                'text': f'{EMOJI_DOOR} Выйти из чата',
+                'callback_data': 'chat_leave'
+            },
+        ]]
+    }
