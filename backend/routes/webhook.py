@@ -26,10 +26,15 @@ def telegram_webhook():
         chat_id = chat.get('id')
         callback_data = callback_query.get('data', '')
 
+        # Always stop the button's spinner first, then do the work. Any error in
+        # processing must not turn into a 500 (Telegram would retry forever and
+        # the button keeps loading).
         answer_callback(cq_id)
-
-        if chat_id and callback_data:
-            handle_callback(chat_id, callback_data, message_id=message_id)
+        try:
+            if chat_id and callback_data:
+                handle_callback(chat_id, callback_data, message_id=message_id)
+        except Exception as e:
+            logger.exception('callback handling error: %s', e)
         return 'ok', 200
 
     if message:
@@ -37,6 +42,9 @@ def telegram_webhook():
         chat_id = chat.get('id')
         text = message.get('text', '').strip()
         if text and chat_id:
-            handle_message(chat_id, text)
+            try:
+                handle_message(chat_id, text)
+            except Exception as e:
+                logger.exception('message handling error: %s', e)
 
     return 'ok', 200

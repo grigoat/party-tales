@@ -38,7 +38,7 @@ def tg_send(chat_id: int | str, text: str, parse_mode: str = 'HTML',
 
 
 def set_webhook(url: str | None = None):
-    webhook_url = url or ''
+    webhook_url = (url or '').rstrip('/')
     if not webhook_url:
         return
     full_url = f'{webhook_url}/telegram-webhook'
@@ -61,6 +61,18 @@ def delete_webhook():
         logger.info('webhook deleted')
     except Exception as e:
         logger.error('delete webhook error: %s', e)
+
+
+def set_my_commands(commands: list[dict]):
+    """Register the bot command list (shown in the blue Menu button)."""
+    if not TOKEN:
+        return
+    try:
+        r = requests.post(f'{TG_API}/setMyCommands', json={'commands': commands}, timeout=10)
+        r.raise_for_status()
+        logger.info('bot commands set: %s', r.json().get('ok'))
+    except Exception as e:
+        logger.error('set commands error: %s', e)
 
 
 def answer_callback(callback_query_id: str, text: str | None = None):

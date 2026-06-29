@@ -19,6 +19,13 @@ HOST = os.environ.get('HOST', '0.0.0.0')
 PORT = int(os.environ.get('PORT', 5000))
 WEBHOOK_URL = os.environ.get('WEBHOOK_URL', '')
 
+# Fall back to Railway's auto-provided public domain so the webhook can be
+# registered automatically even when WEBHOOK_URL is not set explicitly.
+if not WEBHOOK_URL:
+    _railway_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '')
+    if _railway_domain:
+        WEBHOOK_URL = 'https://' + _railway_domain.replace('https://', '').replace('http://', '').rstrip('/')
+
 # Database
 DATABASE = os.environ.get('DATABASE_URL', '').replace('sqlite:///', str(BASE_DIR) + '/') or str(BASE_DIR / 'leads.db')
 

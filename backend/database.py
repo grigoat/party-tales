@@ -160,6 +160,16 @@ def get_chat_session(session_id):
         return dict(r) if r else None
 
 
+def get_open_chat_sessions(limit=10):
+    with get_db() as conn:
+        rows = conn.execute(
+            "SELECT * FROM chat_sessions WHERE status IN ('waiting', 'active') "
+            "ORDER BY last_activity DESC LIMIT ?",
+            (limit,)
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
 def touch_chat_session(session_id):
     now = datetime.utcnow().isoformat()
     with get_db() as conn:

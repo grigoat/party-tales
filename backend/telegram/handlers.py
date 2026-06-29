@@ -3,12 +3,12 @@ import logging
 from database import (
     get_leads, get_lead, update_lead_status, get_stats,
     get_chat_session, get_chat_messages, set_session_manager, set_session_status,
-    set_manager_active, get_manager_active, clear_manager_active,
+    set_manager_active, get_manager_active, clear_manager_active, get_open_chat_sessions,
 )
 from telegram.client import tg_send, edit_message_text
 from telegram.messages import (
     COMMANDS, format_lead_card, format_leads_list, format_review_card, format_stats, escape, EMOJI_ARROW,
-    format_chat_joined, chat_leave_keyboard, EMOJI_DOOR,
+    format_chat_joined, chat_leave_keyboard, EMOJI_DOOR, format_menu, format_chats_list,
 )
 
 logger = logging.getLogger(__name__)
@@ -83,6 +83,34 @@ def handle_callback(chat_id: int | str, callback_data: str, message_id: int | No
     if cmd == 'chat_leave':
         _leave_chat(chat_id, message_id=message_id)
         return
+
+    if cmd == 'menu':
+        text, kb = format_menu()
+        if message_id:
+            edit_message_text(chat_id, message_id, text, reply_markup=kb)
+        else:
+            tg_send(chat_id, text, reply_markup=kb)
+        return
+
+    if cmd == 'chats':
+        sessions = get_open_chat_sessions(limit=10)
+        text, kb = format_chats_list(sessions)
+        if message_id:
+            edit_message_text(chat_id, message_id, text, reply_markup=kb)
+        else:
+            tg_send(chat_id, text, reply_markup=kb)
+        return
+
+    if cmd == 'help':
+        tg_send(chat_id, COMMANDS['/help'])
+        return
+
+    if cmd.startswith('leads_'):
+        status = cmd[len('leads_'):]
+        if status in ('new', 'contacted', 'closed'):
+            leads = get_leads(limit=10, status=status)
+            tg_send(chat_id, format_leads_list(leads))
+            return
 
     if cmd == 'leads':
         leads = get_leads(limit=10)
@@ -162,6 +190,19 @@ def handle_command(cmd: str, args: list, chat_id: int | str):
 
     if cmd == '/start':
         tg_send(chat_id, COMMANDS['/start'])
+        text, kb = format_menu()
+        tg_send(chat_id, text, reply_markup=kb)
+        return
+
+    if cmd == '/menu':
+        text, kb = format_menu()
+        tg_send(chat_id, text, reply_markup=kb)
+        return
+
+    if cmd == '/chats':
+        sessions = get_open_chat_sessions(limit=10)
+        text, kb = format_chats_list(sessions)
+        tg_send(chat_id, text, reply_markup=kb)
         return
 
     if cmd == '/help':

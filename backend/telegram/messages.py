@@ -16,24 +16,82 @@ EMOJI_DOOR = '\U0001F6AA'
 
 COMMANDS = {
     '/start': (
-        f'{EMOJI_WAVE} Привет! Я бот для заявок '
-        'с сайта Party Tales.\n\n'
-        'Команды:\n'
-        '/leads — свежие заявки\n'
-        '/lead_N — детали заявки\n'
-        '/status_N_new|contacted|closed — сменить статус\n'
-        '/stats — статистика'
+        f'{EMOJI_WAVE} Привет! Я бот PARTY TALES — заявки и живой чат с сайта.\n\n'
+        'Откройте /menu или жмите кнопки ниже 👇'
     ),
     '/help': (
-        '/leads — свежие заявки\n'
+        '📋 /menu — главное меню\n'
+        '💬 /chats — активные чаты с сайта\n'
+        '🆕 /leads — свежие заявки\n'
         '/lead_N — детали заявки\n'
         '/status_N_new|contacted|closed — сменить статус\n'
-        '/stats — статистика\n'
-        '/leave — выйти из чата с гостем\n\n'
+        '📊 /stats — статистика\n'
+        '🚪 /leave — выйти из чата с гостем\n\n'
         '💬 Когда гость пишет в чат на сайте, придёт уведомление с кнопкой '
-        '«Войти в переписку» — нажмите её и просто отвечайте сообщениями.'
+        '«Войти в переписку» — нажмите её и просто отвечайте сообщениями. '
+        'Текст уйдёт гостю на сайт.'
     ),
 }
+
+BOT_COMMANDS = [
+    {'command': 'menu', 'description': '📋 Меню'},
+    {'command': 'chats', 'description': '💬 Активные чаты с сайта'},
+    {'command': 'leads', 'description': '🆕 Свежие заявки'},
+    {'command': 'stats', 'description': '📊 Статистика'},
+    {'command': 'leave', 'description': '🚪 Выйти из чата с гостем'},
+    {'command': 'help', 'description': '❓ Помощь'},
+]
+
+
+def main_menu_keyboard():
+    return {
+        'inline_keyboard': [
+            [
+                {'text': '🆕 Свежие заявки', 'callback_data': 'leads'},
+                {'text': '📊 Статистика', 'callback_data': 'stats'},
+            ],
+            [
+                {'text': '💬 Активные чаты', 'callback_data': 'chats'},
+            ],
+            [
+                {'text': f'{EMOJI_GREEN} Новые', 'callback_data': 'leads_new'},
+                {'text': f'{EMOJI_YELLOW} В работе', 'callback_data': 'leads_contacted'},
+            ],
+            [
+                {'text': '❓ Помощь', 'callback_data': 'help'},
+            ],
+        ]
+    }
+
+
+def format_menu():
+    text = (
+        f'<b>{EMOJI_SPEECH} Меню PARTY TALES</b>\n\n'
+        'Выберите действие 👇'
+    )
+    return text, main_menu_keyboard()
+
+
+def format_chats_list(sessions):
+    if not sessions:
+        text = f'{EMOJI_SPEECH} Сейчас нет активных чатов с сайта.'
+        return text, {'inline_keyboard': [[{'text': '« Меню', 'callback_data': 'menu'}]]}
+
+    lines = [f'<b>{EMOJI_SPEECH} Активные чаты ({len(sessions)}):</b>', '']
+    rows = []
+    for s in sessions:
+        name = s.get('name') or f'Гость #{s["id"]}'
+        waiting = s['status'] == 'waiting'
+        mark = '🟢' if waiting else '🟡'
+        state = 'ждёт ответа' if waiting else 'в работе'
+        lines.append(f'{mark} #{s["id"]} {escape(name)} — {state}')
+        rows.append([{
+            'text': f'💬 Войти: {name}'[:40],
+            'callback_data': f'chat_join_{s["id"]}'
+        }])
+    rows.append([{'text': '« Меню', 'callback_data': 'menu'}])
+    return '\n'.join(lines), {'inline_keyboard': rows}
+
 
 STATUS_ICONS = {
     'new': EMOJI_GREEN,
