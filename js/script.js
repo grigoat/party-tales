@@ -562,106 +562,123 @@ document.addEventListener('DOMContentLoaded', function() {
       return n;
     }
 
+    // Старт перехода за это время до конца клипа — следующее видео
+    // успевает начать играть скрытым и плавно проявиться без рывка.
+    var PREROLL = 0.6;   // сек
+    var FADE_MS = 600;   // длительность кроссфейда
+
     function createSlot(container, existingEl, initialIdx) {
+      var baseCss = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;' +
+                    'transition:opacity ' + FADE_MS + 'ms ease;will-change:opacity;backface-visibility:hidden';
+
       existingEl.muted = true;
       existingEl.playsInline = true;
-      existingEl.preload = 'metadata';
-      existingEl.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover';
+      existingEl.preload = 'auto';
+      existingEl.style.cssText = baseCss + ';opacity:1;z-index:1';
 
       var buffer = document.createElement('video');
       buffer.muted = true;
       buffer.playsInline = true;
       buffer.preload = 'auto';
-      buffer.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;pointer-events:none';
+      buffer.style.cssText = baseCss + ';opacity:0;z-index:0;pointer-events:none';
 
       container.appendChild(existingEl);
       container.appendChild(buffer);
 
-      var slot = { active: existingEl, buffer: buffer, idx: initialIdx };
+      var slot = { active: existingEl, buffer: buffer, idx: initialIdx, nextIdx: -1, transitioning: false };
 
       function retryPlay(el) {
         if (!el.paused) return;
         el.play().catch(function() {
-          setTimeout(function() { retryPlay(el); }, 500);
+          setTimeout(function() { retryPlay(el); }, 400);
         });
-      }
-
-      function keepPlaying(el) {
-        el.addEventListener('waiting', function() {
-          setTimeout(function() { retryPlay(el); }, 300);
-        });
-      }
-
-      function swap() {
-        var newIdx = pickNext(slot.idx, slots.map(function(s) { return s.idx; }));
-        slot.idx = newIdx;
-
-        var a = slot.active, b = slot.buffer;
-        b.currentTime = 0;
-
-        var commit = function() {
-          b.style.opacity = '';
-          b.style.pointerEvents = '';
-          b.play().catch(function() {});
-          a.style.opacity = '0';
-          a.style.pointerEvents = 'none';
-          a.style.visibility = 'hidden';
-
-          a.removeEventListener('ended', swap);
-          a.removeEventListener('error', swap);
-          b.addEventListener('ended', swap);
-          b.addEventListener('error', swap);
-
-          keepPlaying(b);
-
-          slot.active = b;
-          slot.buffer = a;
-
-          preloadNext();
-        };
-
-        if (b.readyState >= 4) {
-          commit();
-        } else if (b.readyState >= 2) {
-          var onCanPlay = function() {
-            b.removeEventListener('error', onFail);
-            commit();
-          };
-          var onFail = function() {
-            b.removeEventListener('canplay', onCanPlay);
-            var retryIdx = pickNext(slot.idx, slots.map(function(s) { return s.idx; }));
-            slot.idx = retryIdx;
-            b.src = 'images/videos/' + videoFiles[retryIdx];
-            swap();
-          };
-          b.addEventListener('canplay', onCanPlay, { once: true });
-          b.addEventListener('error', onFail, { once: true });
-        } else {
-          var onReady = function() {
-            b.removeEventListener('error', onFail);
-            var onCanPlay2 = function() { commit(); };
-            b.addEventListener('canplay', onCanPlay2, { once: true });
-          };
-          var onFail = function() {
-            b.removeEventListener('loadeddata', onReady);
-            var retryIdx = pickNext(slot.idx, slots.map(function(s) { return s.idx; }));
-            slot.idx = retryIdx;
-            b.src = 'images/videos/' + videoFiles[retryIdx];
-            swap();
-          };
-          b.addEventListener('loadeddata', onReady, { once: true });
-          b.addEventListener('error', onFail, { once: true });
-        }
       }
 
       function preloadNext() {
         var nextIdx = pickNext(slot.idx, slots.map(function(s) { return s.idx; }));
-        slot.buffer.src = 'images/videos/' + videoFiles[nextIdx];
+        slot.nextIdx = nextIdx;
+        if (slot.buffer.src.indexOf(videoFiles[nextIdx]) === -1) {
+          slot.buffer.src = 'images/videos/' + videoFiles[nextIdx];
+          slot.buffer.load();
+        }
       }
 
-      existingEl.addEventListener('ended', swap);
-      existingEl.addEventListener('error', swap);
-      keepPlaying(existingEl);
+      function beginCrossfade() {
+        if (slot.transitioning) return;
+        slot.transitioning = true;
+
+        var a = slot.active, b = slot.buffer;
+        try { b.currentTime = 0; } catch (e) {}
+
+        var reveal = function() {
+          // новый клип уже играет скрытым — теперь просто проявляем поверх старого
+          b.style.zIndex = '2';
+          a.style.zIndex = '1';
+          b.style.opacity = '1';
+
+          setTimeout(function() {
+            a.style.opacity = '0';
+            a.pause();
+            if (slot.nextIdx >= 0) slot.idx = slot.nextIdx;
+            slot.active = b;
+            slot.buffer = a;
+            slot.transitioning = false;
+            preloadNext();
+          }, FADE_MS + 50);
+        };
+
+        if (b.readyState >= 3) {
+          var p = b.play();
+          if (p && p.then) { p.then(reveal).catch(reveal); } else { reveal(); }
+        } else {
+          if (!b.src) preloadNext();
+          var onReady = function() {
+            b.removeEventListener('canplay', onReady);
+            b.removeEventListener('error', onReady);
+            b.play().catch(function() {});
+            reveal();
+          };
+          b.addEventListener('canplay', onReady, { once: true });
+          b.addEventListener('error', onReady, { once: true });
+        }
+      }
+
+      slot.begin = beginCrossfade;
+
+      function attach(el) {
+        el._ptSlot = slot;            // всегда указываем на актуальный слот
+        if (el._ptAttached) return;   // слушатели вешаем один раз на элемент
+        el._ptAttached = true;
+
+        el.addEventListener('timeupdate', function() {
+          var s = el._ptSlot;
+          if (el !== s.active || s.transitioning) return;
+          var d = el.duration;
+          if (d && isFinite(d) && d - el.currentTime <= PREROLL) s.begin();
+        });
+        el.addEventListener('ended', function() {
+          var s = el._ptSlot;
+          if (el !== s.active) return;
+          // не даём кадру замереть, пока проявляется следующий клип
+          if (!s.transitioning) {
+            el.currentTime = 0;
+            el.play().catch(function() {});
+            s.begin();
+          }
+        });
+        el.addEventListener('error', function() {
+          var s = el._ptSlot;
+          if (el === s.active && !s.transitioning) s.begin();
+        });
+        el.addEventListener('waiting', function() {
+          var s = el._ptSlot;
+          if (el !== s.active) return;
+          setTimeout(function() { retryPlay(el); }, 250);
+        });
+      }
+
+      attach(existingEl);
+      attach(buffer);
 
       existingEl.src = 'images/videos/' + videoFiles[initialIdx];
       existingEl.play().catch(function() { retryPlay(existingEl); });
