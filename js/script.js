@@ -545,7 +545,6 @@ document.addEventListener('DOMContentLoaded', function() {
       'video-12-04-23-08-22.mp4'
     ];
 
-    var started = false;
     var currentMode = '';
     var singleSlot = null;
     var slots = [];
@@ -708,16 +707,53 @@ document.addEventListener('DOMContentLoaded', function() {
       attach(existingEl);
       attach(buffer);
 
-      existingEl.src = 'images/videos/' + videoFiles[initialIdx];
-      existingEl.play().catch(function() { retryPlay(existingEl); });
-      existingEl.addEventListener('playing', function() { preloadNext(); }, { once: true });
+      // даём наружу хелперы для синхронного запуска всех роликов
+      slot.preloadNext = preloadNext;
+      slot.retry = retryPlay;
 
-      if (!started) {
-        started = true;
-        heroVideoBg.style.opacity = '1';
-      }
+      // только грузим — воспроизведение запустит startSlots() для всех сразу
+      existingEl.src = 'images/videos/' + videoFiles[initialIdx];
+      existingEl.load();
 
       return slot;
+    }
+
+    // Запускаем все ролики в один момент — чтобы ни один не оставался тёмным,
+    // пока другие уже играют.
+    function startSlots(list) {
+      var actives = list.map(function(s) { return s.active; });
+      var launched = false;
+      var fallback;
+
+      var go = function() {
+        if (launched) return;
+        launched = true;
+        clearTimeout(fallback);
+        list.forEach(function(s) {
+          try { s.active.currentTime = 0; } catch (e) {}
+        });
+        // play() в одном тике для всех
+        list.forEach(function(s) {
+          s.active.play().catch(function() { s.retry(s.active); });
+          s.active.addEventListener('playing', function() { s.preloadNext(); }, { once: true });
+        });
+        heroVideoBg.style.opacity = '1';
+      };
+
+      var pending = actives.length;
+      var oneReady = function() { if (--pending <= 0) go(); };
+      actives.forEach(function(el) {
+        if (el.readyState >= 3) { oneReady(); return; }
+        var onReady = function() {
+          el.removeEventListener('canplay', onReady);
+          el.removeEventListener('error', onReady);
+          oneReady();
+        };
+        el.addEventListener('canplay', onReady, { once: true });
+        el.addEventListener('error', onReady, { once: true });
+      });
+      // если что-то долго грузится — не ждём вечно
+      fallback = setTimeout(go, 2500);
     }
 
     function cleanupSlots() {
@@ -756,7 +792,6 @@ document.addEventListener('DOMContentLoaded', function() {
       if (newMode === currentMode) return;
       currentMode = newMode;
       cleanupSlots();
-      started = false;
 
       if (currentMode === 'single') {
         var wrap = document.createElement('div');
@@ -765,6 +800,7 @@ document.addEventListener('DOMContentLoaded', function() {
         parent.replaceChild(wrap, heroVideoSingle);
         singleSlot = createSlot(wrap, heroVideoSingle, 0);
         singleSlot.container = wrap;
+        startSlots([singleSlot]);
       } else {
         [heroVideo0, heroVideo1, heroVideo2].forEach(function(el, i) {
           var wrap = document.createElement('div');
@@ -774,6 +810,7 @@ document.addEventListener('DOMContentLoaded', function() {
           slot.container = wrap;
           slots.push(slot);
         });
+        startSlots(slots);
       }
     }
 
