@@ -1688,14 +1688,14 @@ footer p { font-size: .85rem; font-weight: 300; }
   .experience-item { padding: 1.5rem .5rem; }
   .experience-item p { max-width: 100%; }
 
-  /* Services preview - single column of horizontal cards on mobile */
-  .services-preview-grid { grid-template-columns: 1fr; gap: .8rem; max-width: 420px; margin-left: auto; margin-right: auto; }
-  .service-preview-card { flex-direction: row; align-items: center; text-align: left; padding: 1.1rem 1.2rem; gap: 1rem; }
-  .service-preview-icon { width: 40px; height: 40px; flex-shrink: 0; }
-  .service-preview-body { flex: 1; gap: .3rem; }
-  .service-preview-body h3 { font-size: 1.05rem; }
-  .service-preview-summary { font-size: .82rem; margin: .15rem 0 .3rem; }
-  .service-preview-cta { font-size: .78rem; }
+  /* Services preview - square cards, 2 per row on mobile */
+  .services-preview-grid { grid-template-columns: 1fr 1fr; gap: .75rem; }
+  .service-preview-card { padding: 1.2rem 1rem; aspect-ratio: 1; gap: .6rem; justify-content: center; text-align: center; align-items: center; }
+  .service-preview-card .service-preview-body { align-items: center; }
+  .service-preview-card .service-preview-summary { display: none; }
+  .service-preview-icon { width: 36px; height: 36px; }
+  .service-preview-body h3 { font-size: .95rem; }
+  .service-preview-cta { font-size: .7rem; }
 
   /* Services with images - stacked on mobile */
   .services-grid-images { grid-template-columns: 1fr; gap: 1.2rem; }
