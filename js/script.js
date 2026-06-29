@@ -9,20 +9,48 @@ document.addEventListener('DOMContentLoaded', function() {
   var lightboxImg = document.getElementById('lightboxImg');
   var lightboxCaption = document.getElementById('lightboxCaption');
   var currentIndex = 0;
+  var lightboxLastFocus = null;
+
+  // Generic focus trap for overlay dialogs (lightbox + modals)
+  function trapFocus(container, e) {
+    if (e.key !== 'Tab') return;
+    var focusable = container.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    var visible = Array.prototype.filter.call(focusable, function(el) {
+      return el.offsetParent !== null || el === document.activeElement;
+    });
+    if (!visible.length) return;
+    var first = visible[0], last = visible[visible.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault(); last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault(); first.focus();
+    }
+  }
 
   function openLightbox(index) {
     var items = document.querySelectorAll('.gallery-item img');
     if (!items[index]) return;
+    if (!lightbox.classList.contains('open')) {
+      lightboxLastFocus = document.activeElement;
+    }
     lightboxImg.src = items[index].src;
     lightboxImg.alt = items[index].alt || 'Фото';
     lightboxCaption.textContent = items[index].alt || 'Фото';
     lightbox.classList.add('open');
     document.body.style.overflow = 'hidden';
+    var closeBtn = lightbox.querySelector('.lightbox-close');
+    if (closeBtn) closeBtn.focus();
   }
 
   function closeLightbox() {
     lightbox.classList.remove('open');
     document.body.style.overflow = '';
+    if (lightboxLastFocus && typeof lightboxLastFocus.focus === 'function') {
+      lightboxLastFocus.focus();
+      lightboxLastFocus = null;
+    }
   }
 
   function changeImage(dir) {
@@ -45,20 +73,31 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('keydown', function(e) {
       if (!lightbox.classList.contains('open')) return;
       if (e.key === 'Escape') closeLightbox();
-      if (e.key === 'ArrowLeft') changeImage(-1);
-      if (e.key === 'ArrowRight') changeImage(1);
+      else if (e.key === 'ArrowLeft') changeImage(-1);
+      else if (e.key === 'ArrowRight') changeImage(1);
+      else if (e.key === 'Tab') trapFocus(lightbox, e);
     });
   }
 
-  // Loaded class and lightbox click handlers for hardcoded gallery images (homepage)
+  // Loaded class and lightbox handlers for hardcoded gallery images (homepage)
   document.querySelectorAll('.gallery-item > img').forEach(function(img, idx) {
     if (img.complete) { img.classList.add('loaded'); }
     else { img.addEventListener('load', function() { this.classList.add('loaded'); }); }
     if (lightbox) {
-      img.addEventListener('click', function() {
-        currentIndex = idx;
-        openLightbox(idx);
-      });
+      var item = img.closest('.gallery-item');
+      if (item) {
+        item.setAttribute('role', 'button');
+        item.setAttribute('tabindex', '0');
+        var label = item.querySelector('.gallery-item-label');
+        item.setAttribute('aria-label', (label ? label.textContent + ' — ' : '') + 'open image');
+        var open = function() { currentIndex = idx; openLightbox(idx); };
+        item.addEventListener('click', open);
+        item.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+        });
+      } else {
+        img.addEventListener('click', function() { currentIndex = idx; openLightbox(idx); });
+      }
     }
   });
 
@@ -369,12 +408,19 @@ document.addEventListener('DOMContentLoaded', function() {
           item.classList.add('gallery-error');
         }
       }
-      (function(imgEl, idxEl) {
-        imgEl.addEventListener('click', function() {
-          currentIndex = idxEl;
-          openLightbox(idxEl);
+      item.setAttribute('role', 'button');
+      item.setAttribute('tabindex', '0');
+      item.setAttribute('aria-label', 'Open image' + (cat ? ' — ' + cat : ''));
+      (function(itemEl, idxEl) {
+        var open = function() { currentIndex = idxEl; openLightbox(idxEl); };
+        itemEl.addEventListener('click', function(e) {
+          if (e.target.closest('a')) return;
+          open();
         });
-      })(img, idx);
+        itemEl.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+        });
+      })(item, idx);
       picture.appendChild(img);
 
       item.innerHTML = '<div class="gallery-error-msg">' +
@@ -903,6 +949,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-stagger').forEach(function(el) {
       revealObserver.observe(el);
     });
+  } else {
+    // No IntersectionObserver support — show everything immediately.
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-stagger').forEach(function(el) {
+      el.classList.add('visible');
+    });
   }
 
   // Toast helper
@@ -1042,23 +1093,26 @@ document.addEventListener('DOMContentLoaded', function() {
       btnInner.textContent = btnOriginalText;
       submitBtn.textContent = '';
       submitBtn.appendChild(btnInner);
+      var spinner = document.createElement('span');
+      spinner.className = 'btn-spinner';
+      spinner.setAttribute('aria-hidden', 'true');
+      submitBtn.appendChild(spinner);
     } else if (submitBtn) {
       btnInner = submitBtn.querySelector('.btn-text');
     }
 
     function setButtonLoading(loading) {
       if (!submitBtn || !btnInner) return;
-      if (loading) {
-        submitBtn.disabled = true;
-        btnInner.textContent = '...';
-      } else {
-        submitBtn.disabled = false;
-        btnInner.textContent = btnOriginalText;
-      }
+      submitBtn.disabled = loading;
+      submitBtn.classList.toggle('is-loading', loading);
+      submitBtn.setAttribute('aria-busy', loading ? 'true' : 'false');
+      if (!loading) btnInner.textContent = btnOriginalText;
     }
 
     function setButtonSuccess() {
       if (!submitBtn || !btnInner) return;
+      submitBtn.classList.remove('is-loading');
+      submitBtn.removeAttribute('aria-busy');
       submitBtn.disabled = true;
       btnInner.textContent = '✓ ' + btnOriginalText;
       setTimeout(function() {
@@ -1188,17 +1242,35 @@ document.addEventListener('DOMContentLoaded', function() {
         'Every guest was amazed...'
       ]
     };
-    reviewBtn.addEventListener('click', function() {
+    var reviewLastFocus = null;
+    function openReviewModal() {
       var lang = typeof currentLang !== 'undefined' ? currentLang : 'de';
       var pool = reviewPlaceholders[lang] || reviewPlaceholders.en;
       reviewModal.querySelector('#reviewText').placeholder = pool[Math.floor(Math.random() * pool.length)];
       reviewRating.value = '5';
       setStars(5);
+      reviewLastFocus = document.activeElement;
       reviewModal.classList.add('open');
-    });
-    reviewModalClose.addEventListener('click', function() { reviewModal.classList.remove('open'); });
+      document.body.style.overflow = 'hidden';
+      var firstField = document.getElementById('reviewName');
+      if (firstField) firstField.focus();
+    }
+    function closeReviewModal() {
+      reviewModal.classList.remove('open');
+      document.body.style.overflow = '';
+      if (reviewLastFocus && typeof reviewLastFocus.focus === 'function') {
+        reviewLastFocus.focus();
+        reviewLastFocus = null;
+      }
+    }
+    reviewBtn.addEventListener('click', openReviewModal);
+    reviewModalClose.addEventListener('click', closeReviewModal);
     reviewModal.addEventListener('click', function(e) {
-      if (e.target === reviewModal) reviewModal.classList.remove('open');
+      if (e.target === reviewModal) closeReviewModal();
+    });
+    reviewModal.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeReviewModal();
+      else if (e.key === 'Tab') trapFocus(reviewModal, e);
     });
 
     var stars = reviewModal.querySelectorAll('.star');
@@ -1253,7 +1325,7 @@ document.addEventListener('DOMContentLoaded', function() {
         reviewForm.reset();
         reviewRating.value = '5';
         setStars(5);
-        reviewModal.classList.remove('open');
+        closeReviewModal();
         var lang = typeof currentLang !== 'undefined' ? currentLang : 'de';
         var t = typeof translations !== 'undefined' ? translations[lang] : null;
         showToast(

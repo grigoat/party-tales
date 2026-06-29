@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>document.documentElement.classList.add("js");</script>
   <meta name="description" content="PARTY TALES — Swiss boutique balloon decoration studio. Premium helium balloons, photo backdrops, personalised decor in Zug, Lucerne, Zurich. Same-day delivery." data-i18n-meta="index.meta.desc">
   <meta property="og:title" content="PARTY TALES | Premium Balloon Decoration Switzerland" data-i18n-meta="index.page.title.full">
   <meta property="og:description" content="Swiss boutique studio for unforgettable balloon decorations. Birthdays, weddings, corporate events — we create the wonder." data-i18n-meta="index.meta.desc">
@@ -311,9 +312,9 @@
 
 <!-- Review Modal -->
 <div class="modal-overlay" id="reviewModal">
-  <div class="modal">
-    <button class="modal-close" id="reviewModalClose" aria-label="Close">&times;</button>
-    <h3 class="modal-title" data-i18n="index.review.title">Leave a review</h3>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reviewModalTitle">
+    <button class="modal-close" id="reviewModalClose" aria-label="Close" data-i18n-aria="lightbox.close">&times;</button>
+    <h3 class="modal-title" id="reviewModalTitle" data-i18n="index.review.title">Leave a review</h3>
     <form id="reviewForm" novalidate>
       <div class="form-group">
         <label for="reviewName" data-i18n="index.review.name">Your name</label>
@@ -352,10 +353,10 @@
 </section>
 
 <!-- Lightbox -->
-<div class="lightbox" id="lightbox">
-  <span class="lightbox-close">&times;</span>
-  <span class="lightbox-prev">&#10094;</span>
-  <span class="lightbox-next">&#10095;</span>
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer" data-i18n-aria="lightbox.aria">
+  <button type="button" class="lightbox-close" aria-label="Close" data-i18n-aria="lightbox.close">&times;</button>
+  <button type="button" class="lightbox-prev" aria-label="Previous" data-i18n-aria="lightbox.prev">&#10094;</button>
+  <button type="button" class="lightbox-next" aria-label="Next" data-i18n-aria="lightbox.next">&#10095;</button>
   <img class="lightbox-content" id="lightboxImg" alt="Фото" data-i18n-aria="gallery.img.alt">
   <div class="lightbox-caption" id="lightboxCaption"></div>
 </div>

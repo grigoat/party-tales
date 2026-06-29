@@ -226,6 +226,10 @@ var translations = {
     "gallery.img.label": "Foto",
     "backToTop.aria": "Nach oben",
     "navToggle.aria": "Men&uuml;",
+    "lightbox.aria": "Bildansicht",
+    "lightbox.close": "Schlie&szlig;en",
+    "lightbox.prev": "Vorheriges Bild",
+    "lightbox.next": "N&auml;chstes Bild",
     "skip.content": "Zum Inhalt springen",
 
     "services.page.eyebrow": "Unsere Arbeit",
@@ -490,6 +494,10 @@ var translations = {
     "gallery.img.label": "Фото",
     "backToTop.aria": "Наверх",
     "navToggle.aria": "Меню",
+    "lightbox.aria": "Просмотр фото",
+    "lightbox.close": "Закрыть",
+    "lightbox.prev": "Предыдущее фото",
+    "lightbox.next": "Следующее фото",
     "skip.content": "Перейти к содержанию",
 
     "services.page.eyebrow": "Наши услуги",
@@ -754,6 +762,10 @@ var translations = {
     "gallery.img.label": "Photo",
     "backToTop.aria": "Back to top",
     "navToggle.aria": "Menu",
+    "lightbox.aria": "Image viewer",
+    "lightbox.close": "Close",
+    "lightbox.prev": "Previous image",
+    "lightbox.next": "Next image",
     "skip.content": "Skip to content",
 
     "services.page.eyebrow": "Our craft",
@@ -920,6 +932,10 @@ function applyLanguage(lang) {
     });
     dropdown.classList.remove('open');
   }
+  if (customToggle) {
+    customToggle.classList.remove('open');
+    customToggle.setAttribute('aria-expanded', 'false');
+  }
 }
 
 function initLanguage() {
@@ -939,30 +955,66 @@ if (langItem) {
   var langSelect = document.getElementById('langSelect');
   var langBtn = document.createElement('button');
   langBtn.className = 'lang-btn';
+  langBtn.type = 'button';
   langBtn.setAttribute('aria-label', 'Select language');
+  langBtn.setAttribute('aria-haspopup', 'true');
+  langBtn.setAttribute('aria-expanded', 'false');
   langBtn.innerHTML = 'DE <svg class="lang-arrow" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 1l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
   var dropdown = document.createElement('div');
   dropdown.className = 'lang-dropdown';
+  dropdown.setAttribute('role', 'menu');
+  var langOpts = [];
   ['de','ru','en'].forEach(function(code) {
     var opt = document.createElement('button');
+    opt.type = 'button';
     opt.textContent = code.toUpperCase();
     opt.setAttribute('data-lang', code);
+    opt.setAttribute('role', 'menuitem');
+    opt.setAttribute('lang', code);
     opt.addEventListener('click', function() {
       applyLanguage(code);
+      langBtn.setAttribute('aria-expanded', 'false');
+      langBtn.focus();
     });
     dropdown.appendChild(opt);
+    langOpts.push(opt);
   });
+
+  function closeLangMenu() {
+    dropdown.classList.remove('open');
+    langBtn.classList.remove('open');
+    langBtn.setAttribute('aria-expanded', 'false');
+  }
+  function openLangMenu() {
+    dropdown.classList.add('open');
+    langBtn.classList.add('open');
+    langBtn.setAttribute('aria-expanded', 'true');
+  }
 
   langBtn.addEventListener('click', function(e) {
     e.stopPropagation();
-    dropdown.classList.toggle('open');
-    langBtn.classList.toggle('open');
+    if (dropdown.classList.contains('open')) { closeLangMenu(); }
+    else { openLangMenu(); }
   });
-  document.addEventListener('click', function() {
-    dropdown.classList.remove('open');
-    langBtn.classList.remove('open');
+  langBtn.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openLangMenu();
+      langOpts[0].focus();
+    }
   });
+  dropdown.addEventListener('keydown', function(e) {
+    var idx = langOpts.indexOf(document.activeElement);
+    if (e.key === 'Escape') {
+      e.preventDefault(); closeLangMenu(); langBtn.focus();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault(); langOpts[(idx + 1) % langOpts.length].focus();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault(); langOpts[(idx - 1 + langOpts.length) % langOpts.length].focus();
+    }
+  });
+  document.addEventListener('click', closeLangMenu);
 
   langItem.appendChild(langBtn);
   langItem.appendChild(dropdown);
