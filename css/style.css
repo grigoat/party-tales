@@ -1690,8 +1690,11 @@ footer p { font-size: .85rem; font-weight: 300; }
 
   /* Services preview - square cards, 2 per row on mobile */
   .services-preview-grid { grid-template-columns: 1fr 1fr; gap: .75rem; }
-  .service-preview-card { padding: 1.2rem 1rem; aspect-ratio: 1; gap: .6rem; justify-content: center; text-align: center; align-items: center; }
+  /* min-width:0 stops the aspect-ratio from forcing the grid tracks wider
+     than their 1fr share, which pushed the right column past the screen. */
+  .service-preview-card { min-width: 0; padding: 1.2rem 1rem; aspect-ratio: 1; gap: .6rem; justify-content: center; text-align: center; align-items: center; }
   .service-preview-card .service-preview-body { align-items: center; }
+  .service-preview-card .service-preview-tag { display: none; } /* duplicates the title on mobile */
   .service-preview-card .service-preview-summary { display: none; }
   .service-preview-icon { width: 36px; height: 36px; }
   .service-preview-body h3 { font-size: .95rem; }
