@@ -221,7 +221,9 @@
   }
 
   function showTeaser() {
-    if (isOpen || sessionId || ssGet(SS_TEASER)) return;
+    // Shown once per browser tab. A past session does not suppress it — a
+    // returning visitor still gets the gentle nudge (unless the panel is open).
+    if (isOpen || ssGet(SS_TEASER)) return;
     ssSet(SS_TEASER, '1');
     els.teaserName.textContent = t('agentName');
     els.teaserText.textContent = getProactive();
@@ -238,7 +240,7 @@
   }
 
   function scheduleTeaser() {
-    if (sessionId || ssGet(SS_TEASER)) return;
+    if (ssGet(SS_TEASER)) return;
     teaserTimer = setTimeout(showTeaser, TEASER_DELAY_MS);
   }
 
@@ -449,9 +451,9 @@
     if (sessionId) {
       poll();
       startPolling(POLL_IDLE_MS);
-    } else {
-      scheduleTeaser();
     }
+    // Proactive greeting, shown once per tab regardless of any past session.
+    scheduleTeaser();
   }
 
   if (document.readyState === 'loading') {
