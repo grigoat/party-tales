@@ -21,6 +21,7 @@
   var LS_LAST = 'pt_chat_last';
   var LS_SEEN = 'pt_chat_seen';
   var LS_NAME = 'pt_chat_name';
+  var LS_HISTORY = 'pt_chat_history'; // persisted conversation so it survives reloads
   var SS_TEASER = 'pt_chat_teaser_shown'; // sessionStorage: show proactive teaser once per tab
 
   function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -39,6 +40,28 @@
   var sessionId = parseInt(lsGet(LS_SESSION), 10) || null;
   var lastId = parseInt(lsGet(LS_LAST), 10) || 0;
   var managerJoined = false;
+  var restoring = false; // true while replaying saved history (so we don't re-save it)
+
+  // ---- conversation history (persisted, so the chat survives a page reload) ----
+  function loadHistory() {
+    try {
+      var arr = JSON.parse(lsGet(LS_HISTORY) || '[]');
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) { return []; }
+  }
+  var history = loadHistory();
+
+  function saveHistory() {
+    try {
+      if (history.length > 200) history = history.slice(-200); // keep storage bounded
+      lsSet(LS_HISTORY, JSON.stringify(history));
+    } catch (e) {}
+  }
+  function record(kind, sender, text) {
+    if (restoring) return;
+    history.push({ kind: kind, sender: sender, text: text });
+    saveHistory();
+  }
   var isOpen = false;
   var pollTimer = null;
   var greetingShown = false;
@@ -262,14 +285,17 @@
     wrap.innerHTML = '<span class="pt-msg-text">' + escapeHtml(text).replace(/\n/g, '<br>') + '</span>';
     els.body.appendChild(wrap);
     els.body.scrollTop = els.body.scrollHeight;
+    record('bubble', sender, text);
   }
 
-  function appendSystem(text) {
+  // `ephemeral` system notices (e.g. send errors) are shown but not persisted.
+  function appendSystem(text, ephemeral) {
     var wrap = document.createElement('div');
     wrap.className = 'pt-msg-system';
     wrap.textContent = text;
     els.body.appendChild(wrap);
     els.body.scrollTop = els.body.scrollHeight;
+    if (!ephemeral) record('system', null, text);
   }
 
   function systemText(token) {
@@ -290,6 +316,20 @@
       '</div>';
     els.body.appendChild(wrap);
     els.body.scrollTop = els.body.scrollHeight;
+    record('greeting', null, text);
+  }
+
+  // Replay the saved conversation into the panel (DOM only — no re-saving).
+  function restoreHistory() {
+    if (!history.length) return;
+    restoring = true;
+    history.forEach(function (m) {
+      if (m.kind === 'greeting') appendAgentGreeting(m.text);
+      else if (m.kind === 'system') appendSystem(m.text);
+      else appendBubble(m.sender, m.text);
+    });
+    restoring = false;
+    greetingShown = true; // a conversation already exists; don't inject a fresh greeting
   }
 
   function showGreeting() {
@@ -348,7 +388,7 @@
       if (first) { appendSystem(t('sent')); updateNameField(); }
       poll();
     }).catch(function () {
-      appendSystem(t('error'));
+      appendSystem(t('error'), true);
     });
   }
 
@@ -447,6 +487,8 @@
     build();
     applyChatLang();
     hookLanguage();
+    // Replay any saved conversation so it survives reloads.
+    restoreHistory();
     // If there is an existing session, do a background poll for the unread badge.
     if (sessionId) {
       poll();
