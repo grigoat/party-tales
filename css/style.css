@@ -72,7 +72,7 @@
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: clip; }
 /* ── Reveal Animations ── */
 /* No-JS / no-IntersectionObserver fallback: never hide content from users
    who can't run the reveal observer (SEO, screen readers, disabled JS). */
@@ -114,6 +114,7 @@ body {
   line-height: 1.6;
   width: 100%;
   position: relative;
+  overflow-x: clip;
 }
 h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; }
 img { max-width: 100%; display: block; }
@@ -145,9 +146,12 @@ nav {
   padding: 1.2rem 3rem;
   padding: 1.2rem calc(3rem + env(safe-area-inset-right)) 1.2rem calc(3rem + env(safe-area-inset-left));
   display: flex; justify-content: space-between; align-items: center;
-  transition: background .4s, padding .4s, box-shadow .4s;
+  transition: background .4s, padding .4s, box-shadow .4s, transform .45s var(--ease-out-expo);
   background: transparent;
+  will-change: transform;
 }
+/* Auto-hide on scroll down, reveal on scroll up / stop */
+nav.nav-hidden { transform: translateY(-100%); }
 nav.scrolled {
   background: rgba(250, 248, 245, .95);
   -webkit-backdrop-filter: blur(12px);
@@ -389,9 +393,9 @@ nav.scrolled + * .lang-dropdown { /* handled by data attribute */ }
 /* ── Services Preview (homepage) ── */
 .services-preview-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  max-width: 1000px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.4rem;
+  max-width: 1180px;
   margin: 0 auto;
 }
 .service-preview-card {
@@ -1245,30 +1249,55 @@ select, textarea, input { font-size: 16px !important; }
 }
 .testimonials-slider::-webkit-scrollbar { display: none; }
 .testimonial-card {
+  position: relative;
   min-width: 380px;
   flex: 0 0 auto;
   scroll-snap-align: start;
   background: var(--color-card);
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,.04);
+  border-radius: 24px;
+  padding: 2.2rem 2rem 2rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,.05);
   border: 1px solid var(--color-border);
-  transition: all .3s var(--ease-out-expo);
+  transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .35s var(--ease-out-expo);
+  overflow: hidden;
+}
+/* Decorative quote mark in the corner */
+.testimonial-card::before {
+  content: '\201C';
+  position: absolute;
+  top: -.4rem; right: 1.2rem;
+  font-family: var(--font-display);
+  font-size: 5.5rem;
+  line-height: 1;
+  color: var(--color-accent);
+  opacity: .14;
+  pointer-events: none;
 }
 .testimonial-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 40px rgba(212,120,176,0.1);
+  transform: translateY(-6px);
+  box-shadow: 0 20px 48px rgba(212,120,176,0.14);
+  border-color: var(--color-accent-light);
 }
 .testimonial-card-top {
   display: flex;
   align-items: center;
-  gap: .8rem;
-  margin-bottom: 1.2rem;
+  gap: .85rem;
+  margin-bottom: .2rem;
 }
 .testimonial-avatar {
-  width: 44px; height: 44px;
+  width: 48px; height: 48px;
   border-radius: 50%;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1.1rem;
+  line-height: 1;
+  text-transform: uppercase;
+  box-shadow: 0 4px 12px rgba(0,0,0,.12);
 }
 .testimonial-card-top div {
   display: flex;
@@ -1571,6 +1600,7 @@ footer p { font-size: .85rem; font-weight: 300; }
   section { padding: 2.5rem 1.5rem; }
   .services-grid-images { grid-template-columns: repeat(2, 1fr); }
   .values-grid { grid-template-columns: repeat(2, 1fr); }
+  .services-preview-grid { grid-template-columns: repeat(2, 1fr); max-width: 640px; }
 }
 /* Tablet landscape: 1024–1279 */
 @media (min-width: 1024px) and (max-width: 1279px) {

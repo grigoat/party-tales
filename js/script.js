@@ -796,10 +796,30 @@ document.addEventListener('DOMContentLoaded', function() {
   if (navbar && document.querySelector('.page-hero')) {
     navbar.classList.add('scrolled');
   }
-  window.addEventListener('scroll', function() {
-    if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 60);
-    if (backToTop) backToTop.classList.toggle('show', window.scrollY > 500);
-  }, { passive: true });
+  var lastScrollY = window.scrollY;
+  var navStopTimer;
+  var NAV_HIDE_THRESHOLD = 80; // keep the bar visible near the very top
+  function onScroll() {
+    var y = window.scrollY < 0 ? 0 : window.scrollY;
+    if (navbar) {
+      navbar.classList.toggle('scrolled', y > 60);
+      var navLinksEl = document.getElementById('navLinks');
+      var menuOpen = navLinksEl && navLinksEl.classList.contains('open');
+      if (!menuOpen) {
+        if (y > lastScrollY && y > NAV_HIDE_THRESHOLD) {
+          navbar.classList.add('nav-hidden');      // scrolling down → hide
+        } else if (y < lastScrollY - 4) {
+          navbar.classList.remove('nav-hidden');   // scrolling up → show
+        }
+        // reveal again once scrolling stops
+        clearTimeout(navStopTimer);
+        navStopTimer = setTimeout(function() { navbar.classList.remove('nav-hidden'); }, 220);
+      }
+    }
+    if (backToTop) backToTop.classList.toggle('show', y > 500);
+    lastScrollY = y;
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
 
   // Back to top
   if (backToTop) {
@@ -871,11 +891,19 @@ document.addEventListener('DOMContentLoaded', function() {
       reviews.forEach(function(r) {
         var card = document.createElement('div');
         card.className = 'testimonial-card';
+        var rName = (r.name || '').trim();
+        var initial = rName ? rName.charAt(0).toUpperCase() : '★';
+        var avatarGradients = [
+          'linear-gradient(135deg,#E89BC8,#C05E9A)',
+          'linear-gradient(135deg,#D478B0,#A23F7E)',
+          'linear-gradient(135deg,#9C8FA8,#6E6370)'
+        ];
+        var grad = avatarGradients[initial.charCodeAt(0) % avatarGradients.length];
         card.innerHTML =
           '<div class="testimonial-card-top">' +
-            '<div class="testimonial-avatar" style="background:#D478B0"></div>' +
+            '<div class="testimonial-avatar" style="background:' + grad + '" aria-hidden="true">' + escapeHtml(initial) + '</div>' +
             '<div>' +
-              '<cite>&mdash; ' + escapeHtml(r.name || '') + '</cite>' +
+              '<cite>&mdash; ' + escapeHtml(rName) + '</cite>' +
               '<span class="testimonial-event">Review</span>' +
             '</div>' +
           '</div>' +
@@ -926,6 +954,7 @@ document.addEventListener('DOMContentLoaded', function() {
     navToggle.addEventListener('click', function() {
       navToggle.classList.toggle('active');
       navLinks.classList.toggle('open');
+      if (navbar) navbar.classList.remove('nav-hidden');
     });
     navLinks.querySelectorAll('a').forEach(function(link) {
       link.addEventListener('click', function() {
