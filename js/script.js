@@ -603,20 +603,48 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
 
+      function advanceBuffer() {
+        // текущий клип в буфере не пошёл — берём следующий и пробуем позже
+        var n = pickNext(slot.idx, slots.map(function(s) { return s.idx; }));
+        if (n === slot.nextIdx) n = (n + 1) % videoFiles.length;
+        slot.nextIdx = n;
+        slot.buffer.src = 'images/videos/' + videoFiles[n];
+        slot.buffer.load();
+      }
+
       function beginCrossfade() {
         if (slot.transitioning) return;
         slot.transitioning = true;
 
         var a = slot.active, b = slot.buffer;
-        try { b.currentTime = 0; } catch (e) {}
+        var done = false, fadeTimer = null, giveUp = null;
 
-        var reveal = function() {
-          // новый клип уже играет скрытым — теперь просто проявляем поверх старого
+        var cleanup = function() {
+          b.removeEventListener('playing', onPlaying);
+          b.removeEventListener('error', onError);
+          clearTimeout(giveUp);
+        };
+
+        // Буфер так и не пошёл (ошибка/долгая загрузка) — НЕ прячем текущий клип,
+        // оставляем его играть и берём в буфер другой ролик.
+        var abort = function() {
+          if (done) return;
+          done = true;
+          cleanup();
+          slot.transitioning = false;
+          if (a.paused) a.play().catch(function() {});
+          advanceBuffer();
+        };
+
+        // Новый клип реально пошёл (есть кадры) — только теперь проявляем поверх.
+        var commit = function() {
+          if (done) return;
+          done = true;
+          cleanup();
           b.style.zIndex = '2';
           a.style.zIndex = '1';
           b.style.opacity = '1';
-
-          setTimeout(function() {
+          fadeTimer = setTimeout(function() {
             a.style.opacity = '0';
             a.pause();
             if (slot.nextIdx >= 0) slot.idx = slot.nextIdx;
@@ -627,20 +655,22 @@ document.addEventListener('DOMContentLoaded', function() {
           }, FADE_MS + 50);
         };
 
-        if (b.readyState >= 3) {
-          var p = b.play();
-          if (p && p.then) { p.then(reveal).catch(reveal); } else { reveal(); }
-        } else {
-          if (!b.src) preloadNext();
-          var onReady = function() {
-            b.removeEventListener('canplay', onReady);
-            b.removeEventListener('error', onReady);
-            b.play().catch(function() {});
-            reveal();
-          };
-          b.addEventListener('canplay', onReady, { once: true });
-          b.addEventListener('error', onReady, { once: true });
-        }
+        var onPlaying = function() { commit(); };
+        var onError = function() { abort(); };
+
+        b.addEventListener('playing', onPlaying);
+        b.addEventListener('error', onError);
+
+        try { b.currentTime = 0; } catch (e) {}
+        var p = b.play();
+        if (p && p.catch) p.catch(function() {});
+
+        // подстраховка: буфер уже готов и идёт, но событие могло не прийти
+        setTimeout(function() {
+          if (!done && !b.paused && b.readyState >= 3 && b.currentTime > 0) commit();
+        }, 250);
+        // совсем не пошёл за разумное время — откатываемся
+        giveUp = setTimeout(abort, 4000);
       }
 
       slot.begin = beginCrossfade;
@@ -659,12 +689,10 @@ document.addEventListener('DOMContentLoaded', function() {
         el.addEventListener('ended', function() {
           var s = el._ptSlot;
           if (el !== s.active) return;
-          // не даём кадру замереть, пока проявляется следующий клип
-          if (!s.transitioning) {
-            el.currentTime = 0;
-            el.play().catch(function() {});
-            s.begin();
-          }
+          // всегда перезапускаем — кадр не должен замирать (в т.ч. во время фейда)
+          el.currentTime = 0;
+          el.play().catch(function() {});
+          if (!s.transitioning) s.begin();
         });
         el.addEventListener('error', function() {
           var s = el._ptSlot;
