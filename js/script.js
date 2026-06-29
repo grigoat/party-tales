@@ -50,10 +50,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Loaded class for hardcoded gallery images (homepage)
-  document.querySelectorAll('.gallery-item > img').forEach(function(img) {
+  // Loaded class and lightbox click handlers for hardcoded gallery images (homepage)
+  document.querySelectorAll('.gallery-item > img').forEach(function(img, idx) {
     if (img.complete) { img.classList.add('loaded'); }
     else { img.addEventListener('load', function() { this.classList.add('loaded'); }); }
+    if (lightbox) {
+      img.addEventListener('click', function() {
+        currentIndex = idx;
+        openLightbox(idx);
+      });
+    }
   });
 
   // Gallery — load photos
