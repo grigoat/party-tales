@@ -21,6 +21,7 @@ EMOJI_TRASH = '\U0001F5D1'
 EMOJI_PENCIL = '✍'
 EMOJI_REPLY = '\U0001F4AC'
 EMOJI_BACK = '«'
+DASH = '—'
 
 COMMANDS = {
     '/start': (
@@ -237,7 +238,7 @@ def format_review(lead):
         f'<i>\u00AB{escape(text)}\u00BB</i>',
         '',
         f'{REVIEW_STATUS_LABEL.get(lead.get("status"), lead.get("status", ""))}',
-        f'{EMOJI_GLOBE} \u042F\u0437\u044B\u043A: {escape(lead.get("language") or "\u2014")}',
+        f'{EMOJI_GLOBE} \u042F\u0437\u044B\u043A: {escape(lead.get("language") or DASH)}',
         f'{EMOJI_CAL} {lead.get("created_at", "")[:16].replace("T", " ")}',
     ]
     reply = (lead.get('reply') or '').strip()
@@ -330,9 +331,10 @@ def format_reviews_list_header(status, count):
 
 def review_reply_prompt(lead):
     rating, text = parse_review(lead)
+    name = escape(lead.get('name') or '\u0413\u043E\u0441\u0442\u044C')
     return (
         f'{EMOJI_PENCIL} <b>\u041E\u0442\u0432\u0435\u0442 \u043D\u0430 \u043E\u0442\u0437\u044B\u0432 #{lead["id"]}</b> \u043E\u0442 \u041D\u0430\u0442\u0430\u043B\u0438\u0438\n\n'
-        f'<b>{escape(lead.get("name") or "\u0413\u043E\u0441\u0442\u044C")}</b> \u00B7 {stars(rating)}\n'
+        f'<b>{name}</b> \u00B7 {stars(rating)}\n'
         f'<i>\u00AB{escape(text)}\u00BB</i>\n\n'
         '\u041D\u0430\u043F\u0438\u0448\u0438\u0442\u0435 \u043E\u0442\u0432\u0435\u0442 \u043E\u0434\u043D\u0438\u043C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435\u043C \u2014 \u043E\u043D \u043F\u043E\u044F\u0432\u0438\u0442\u0441\u044F \u043F\u043E\u0434 \u043E\u0442\u0437\u044B\u0432\u043E\u043C \u043D\u0430 \u0441\u0430\u0439\u0442\u0435.\n'
         '\u0427\u0442\u043E\u0431\u044B \u043E\u0442\u043C\u0435\u043D\u0438\u0442\u044C, \u043D\u0430\u0436\u043C\u0438\u0442\u0435 /cancel.'
