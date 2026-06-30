@@ -82,6 +82,16 @@ def init_db():
         # Which review a manager is currently composing a reply for (if any)
         _ensure_column(conn, 'manager_state', 'reply_lead_id', 'INTEGER')
 
+        # Small key/value store for one-off migration flags
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS app_meta (
+                key TEXT PRIMARY KEY,
+                value TEXT
+            )
+        ''')
+
+    seed_initial_reviews()
+
 
 def _ensure_column(conn, table, column, decl):
     """Add a column to an existing table if it is not already present."""
@@ -154,6 +164,68 @@ def set_lead_reply(lead_id, reply):
 def delete_lead(lead_id):
     with get_db() as conn:
         conn.execute('DELETE FROM leads WHERE id = ?', (lead_id,))
+
+
+def get_meta(key):
+    with get_db() as conn:
+        r = conn.execute('SELECT value FROM app_meta WHERE key = ?', (key,)).fetchone()
+        return r['value'] if r else None
+
+
+def set_meta(key, value):
+    with get_db() as conn:
+        conn.execute(
+            'INSERT INTO app_meta (key, value) VALUES (?, ?) '
+            'ON CONFLICT(key) DO UPDATE SET value = excluded.value',
+            (key, str(value))
+        )
+
+
+# The three curated testimonials that used to live as static cards on the
+# homepage. Seeded once into the DB as published reviews so they show on the
+# site via /api/reviews AND can be managed (deleted/answered) from the bot.
+# German text — the site's primary locale.
+_INITIAL_REVIEWS = [
+    ('Anna und Dmitrij',
+     'PARTY TALES hat unsere Hochzeit unglaublich gemacht! Der Bogen war so schön, '
+     'dass die Gäste den ganzen Abend fotografiert haben. Danke für die Sensibilität '
+     'und Professionalität!',
+     '2026-06-03T12:00:00'),
+    ('Elena',
+     'Wir haben die Dekoration für den 5. Geburtstag unserer Tochter bestellt. '
+     'Einhorn-Motto — alles war perfekt! Die Kinder waren begeistert und die Ballons '
+     'hielten noch eine Woche nach dem Fest.',
+     '2026-06-02T12:00:00'),
+    ('Olga',
+     'Unglaubliche Kompositionen! Habe eine Überraschung für meinen Mann bestellt — '
+     'ein Zimmer mit Ballons bis zur Decke. Die Emotionen waren überwältigend. '
+     'Danke an das PARTY TALES Team!',
+     '2026-06-01T12:00:00'),
+]
+
+
+def seed_initial_reviews():
+    """Insert the original homepage testimonials as published reviews, once.
+
+    Guarded by an app_meta flag so they are never re-inserted — in particular,
+    if a manager later deletes them from the bot, they stay gone. Each insert is
+    additionally guarded by WHERE NOT EXISTS (keyed on the deterministic
+    created_at + name) so two gunicorn workers booting at once can't duplicate.
+    """
+    if get_meta('static_reviews_seeded'):
+        return
+    with get_db() as conn:
+        for name, comment, created_at in _INITIAL_REVIEWS:
+            conn.execute(
+                "INSERT INTO leads (name, phone, country, event_type, comment, "
+                "page_url, language, created_at, status) "
+                "SELECT ?, '', '', 'Review', ?, '', 'de', ?, 'approved' "
+                "WHERE NOT EXISTS ("
+                "  SELECT 1 FROM leads WHERE event_type = 'Review' "
+                "  AND created_at = ? AND name = ?)",
+                (name, comment, created_at, created_at, name)
+            )
+    set_meta('static_reviews_seeded', '1')
 
 
 def get_leads(limit=10, offset=0, status=None):
