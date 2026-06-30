@@ -8,6 +8,7 @@
   var BACKEND = (typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'http://localhost:5000');
   var SEND_URL = BACKEND + '/api/chat/send';
   var POLL_URL = BACKEND + '/api/chat/poll';
+  var HISTORY_URL = BACKEND + '/api/chat/history';
 
   var POLL_OPEN_MS = 4000;     // while window is open
   var POLL_IDLE_MS = 25000;    // while closed (just to refresh the unread badge)
@@ -332,6 +333,58 @@
     greetingShown = true; // a conversation already exists; don't inject a fresh greeting
   }
 
+  // Map the server's flat message list into our history records. The first
+  // manager message is shown as the personal "greeting" bubble (avatar + name).
+  function serverToHistory(msgs) {
+    var out = [];
+    var firstManagerSeen = false;
+    msgs.forEach(function (m) {
+      if (m.sender === 'system') {
+        out.push({ kind: 'system', sender: null, text: systemText(m.text) });
+      } else if (m.sender === 'visitor') {
+        out.push({ kind: 'bubble', sender: 'visitor', text: m.text });
+      } else { // manager (real reply or AI assistant)
+        if (!firstManagerSeen) {
+          out.push({ kind: 'greeting', sender: null, text: m.text });
+          firstManagerSeen = true;
+        } else {
+          out.push({ kind: 'bubble', sender: 'manager', text: m.text });
+        }
+      }
+    });
+    return out;
+  }
+
+  // The server is the source of truth. On load we pull the full conversation so
+  // the visitor's view always matches what the manager has — even if this
+  // browser's local copy was cleared. Falls back to the local copy if offline.
+  function hydrateFromServer(cb) {
+    var prevLast = lastId;
+    var url = HISTORY_URL + '?session_id=' + encodeURIComponent(sessionId) +
+              '&visitor_id=' + encodeURIComponent(visitorId);
+    fetch(url).then(function (r) {
+      return r.ok ? r.json() : Promise.reject(r.status);
+    }).then(function (data) {
+      if (data.manager_joined !== undefined) setManagerJoined(data.manager_joined);
+      var msgs = data.messages || [];
+      els.body.innerHTML = '';
+      history = serverToHistory(msgs);
+      saveHistory();
+      restoreHistory(); // replay the reconciled history into the panel
+      var unread = 0;
+      msgs.forEach(function (m) {
+        if (m.id > lastId) lastId = m.id;
+        // Manager replies that arrived since this browser last looked = unread.
+        if (m.id > prevLast && m.sender === 'manager') unread++;
+      });
+      lsSet(LS_LAST, lastId);
+      if (unread && !isOpen) bumpBadge(unread);
+      if (cb) cb(true);
+    }).catch(function () {
+      if (cb) cb(false);
+    });
+  }
+
   function showGreeting() {
     if (greetingShown) return;
     if (els.body.children.length === 0) appendAgentGreeting(getProactive());
@@ -487,12 +540,17 @@
     build();
     applyChatLang();
     hookLanguage();
-    // Replay any saved conversation so it survives reloads.
-    restoreHistory();
-    // If there is an existing session, do a background poll for the unread badge.
     if (sessionId) {
-      poll();
-      startPolling(POLL_IDLE_MS);
+      // The server holds the authoritative conversation. Pull it so the visitor
+      // sees exactly what the manager sees, then keep the unread badge fresh.
+      // If the server is unreachable, fall back to the locally saved copy.
+      hydrateFromServer(function (ok) {
+        if (!ok) restoreHistory();
+        startPolling(POLL_IDLE_MS);
+      });
+    } else {
+      // No session yet — replay any locally saved conversation so it survives reloads.
+      restoreHistory();
     }
     // Proactive greeting, shown once per tab regardless of any past session.
     scheduleTeaser();

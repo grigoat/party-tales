@@ -73,6 +73,8 @@
   outline-offset: 2px;
 }
 html { scroll-behavior: smooth; overflow-x: clip; }
+/* Keep anchor / skip-link targets clear of the fixed navigation bar. */
+:target, #main-content, main > section[id] { scroll-margin-top: 6rem; }
 /* ── Reveal Animations ── */
 /* No-JS / no-IntersectionObserver fallback: never hide content from users
    who can't run the reveal observer (SEO, screen readers, disabled JS). */
@@ -977,9 +979,6 @@ section { padding: clamp(3rem, 6vw, 6rem) clamp(1.5rem, 4vw, 3rem); }
   opacity: 0;
 }
 .gallery-item:hover .gallery-item-arrow { transform: translateX(0); opacity: 1; }
-.gallery-item-featured {
-  /* Featured items get a larger initial aspect hint */
-}
 .gallery-item picture {
   display: block;
   width: 100%;
@@ -1606,7 +1605,9 @@ footer p { font-size: .85rem; font-weight: 300; }
 /* Tablet landscape: 1024–1279 */
 @media (min-width: 1024px) and (max-width: 1279px) {
   .gallery-grid { column-count: 3; }
-  .services-grid-squares { grid-template-columns: repeat(3, 1fr); }
+  /* 8 service squares divide evenly into 4 columns (2×4) — 3 cols leaves an
+     uneven, off-looking last row. */
+  .services-grid-squares { grid-template-columns: repeat(4, 1fr); }
   section { padding: 3rem 2rem; }
 }
 /* Mobile: 320–767 */
@@ -1836,7 +1837,7 @@ footer p { font-size: .85rem; font-weight: 300; }
 /* iPad landscape */
 @media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
   .hero { min-height: 70svh; }
-  .services-grid-squares { grid-template-columns: repeat(3, 1fr); }
+  .services-grid-squares { grid-template-columns: repeat(4, 1fr); }
   .gallery-grid { column-count: 4; }
   section { padding: 2.5rem 2rem; }
 }

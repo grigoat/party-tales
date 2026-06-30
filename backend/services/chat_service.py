@@ -157,3 +157,25 @@ def poll_messages(session_id, visitor_id, after_id=0):
             for m in messages
         ],
     }, 200
+
+
+def get_full_history(session_id, visitor_id):
+    """Return the entire conversation (visitor + manager + system) for a session.
+
+    The server is the source of truth: the widget hydrates from this on load so
+    the visitor's view always matches what the manager sees, even if the browser's
+    local copy was cleared. Ownership is checked via visitor_id.
+    """
+    session = database.get_chat_session(session_id)
+    if not session or session.get('visitor_id') != visitor_id:
+        return {'error': 'not found'}, 404
+
+    messages = database.get_chat_messages(session_id, after_id=0)
+    return {
+        'status': session['status'],
+        'manager_joined': bool(session.get('manager_chat_id')),
+        'messages': [
+            {'id': m['id'], 'sender': m['sender'], 'text': m['text'], 'created_at': m['created_at']}
+            for m in messages
+        ],
+    }, 200
