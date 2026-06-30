@@ -970,6 +970,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var reviews;
       try { reviews = JSON.parse(reviewXhr.responseText); } catch(e) { return; }
       if (!reviews || !reviews.length) return;
+      var replyLabels = { de: 'Antwort von Natalia', ru: 'Ответ Наталии', en: 'Reply from Natalia' };
       reviews.forEach(function(r) {
         var card = document.createElement('div');
         card.className = 'testimonial-card';
@@ -981,6 +982,32 @@ document.addEventListener('DOMContentLoaded', function() {
           'linear-gradient(135deg,#9C8FA8,#6E6370)'
         ];
         var grad = avatarGradients[initial.charCodeAt(0) % avatarGradients.length];
+
+        // Reviews are stored as "Rating: N/5\n\n<text>" — pull the rating out
+        // so we can render real stars and show a clean quote.
+        var comment = (r.comment || '').trim();
+        var rating = 5;
+        var rm = comment.match(/^\s*Rating:\s*(\d)\s*\/\s*5\s*/i);
+        if (rm) {
+          rating = Math.max(1, Math.min(5, parseInt(rm[1], 10)));
+          comment = comment.slice(rm[0].length).trim();
+        }
+        var starStr = '';
+        for (var si = 0; si < 5; si++) starStr += (si < rating ? '★' : '☆');
+
+        var lang = typeof currentLang !== 'undefined' ? currentLang : 'de';
+        var replyHtml = '';
+        var rReply = (r.reply || '').trim();
+        if (rReply) {
+          replyHtml =
+            '<div class="testimonial-reply">' +
+              '<span class="testimonial-reply-author">' +
+                escapeHtml(replyLabels[lang] || replyLabels.en) +
+              '</span>' +
+              '<p>' + escapeHtml(rReply) + '</p>' +
+            '</div>';
+        }
+
         card.innerHTML =
           '<div class="testimonial-card-top">' +
             '<div class="testimonial-avatar" style="background:' + grad + '" aria-hidden="true">' + escapeHtml(initial) + '</div>' +
@@ -989,8 +1016,9 @@ document.addEventListener('DOMContentLoaded', function() {
               '<span class="testimonial-event">Review</span>' +
             '</div>' +
           '</div>' +
-          '<div class="testimonial-stars">★★★★★</div>' +
-          '<blockquote>&laquo;' + escapeHtml(r.comment || '') + '&raquo;</blockquote>';
+          '<div class="testimonial-stars" aria-label="' + rating + '/5">' + starStr + '</div>' +
+          '<blockquote>&laquo;' + escapeHtml(comment) + '&raquo;</blockquote>' +
+          replyHtml;
         testTrack.appendChild(card);
         testCards.push(card);
         testCardCount++;

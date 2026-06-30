@@ -36,6 +36,10 @@ def init_db():
             ON leads(created_at DESC)
         ''')
 
+        # --- Migrations: add columns that older databases may not have ---
+        _ensure_column(conn, 'leads', 'reply', "TEXT DEFAULT ''")
+        _ensure_column(conn, 'leads', 'reply_at', "TEXT DEFAULT ''")
+
         # --- Live chat ---
         conn.execute('''
             CREATE TABLE IF NOT EXISTS chat_sessions (
@@ -75,6 +79,15 @@ def init_db():
                 active_session_id INTEGER
             )
         ''')
+        # Which review a manager is currently composing a reply for (if any)
+        _ensure_column(conn, 'manager_state', 'reply_lead_id', 'INTEGER')
+
+
+def _ensure_column(conn, table, column, decl):
+    """Add a column to an existing table if it is not already present."""
+    cols = [r['name'] for r in conn.execute(f'PRAGMA table_info({table})').fetchall()]
+    if column not in cols:
+        conn.execute(f'ALTER TABLE {table} ADD COLUMN {column} {decl}')
 
 
 def add_lead(name, phone, country, event_type, comment, page_url='', language=''):
@@ -91,12 +104,56 @@ def add_lead(name, phone, country, event_type, comment, page_url='', language=''
 def get_approved_reviews(limit=20):
     with get_db() as conn:
         rows = conn.execute(
-            "SELECT id, name, country, comment, created_at FROM leads "
+            "SELECT id, name, country, comment, reply, reply_at, created_at FROM leads "
             "WHERE event_type = 'Review' AND status = 'approved' "
             "ORDER BY created_at DESC LIMIT ?",
             (limit,)
         ).fetchall()
         return [dict(r) for r in rows]
+
+
+def get_reviews(status=None, limit=50):
+    """All reviews (any status) for the manager bot, newest first."""
+    with get_db() as conn:
+        if status:
+            rows = conn.execute(
+                "SELECT * FROM leads WHERE event_type = 'Review' AND status = ? "
+                "ORDER BY created_at DESC LIMIT ?",
+                (status, limit)
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM leads WHERE event_type = 'Review' "
+                "ORDER BY created_at DESC LIMIT ?",
+                (limit,)
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+
+def get_review_counts():
+    with get_db() as conn:
+        row = conn.execute('''
+            SELECT
+                SUM(CASE WHEN status='moderation' THEN 1 ELSE 0 END) as moderation,
+                SUM(CASE WHEN status='approved' THEN 1 ELSE 0 END) as approved,
+                SUM(CASE WHEN status='rejected' THEN 1 ELSE 0 END) as rejected
+            FROM leads WHERE event_type = 'Review'
+        ''').fetchone()
+        return {k: (row[k] or 0) for k in ('moderation', 'approved', 'rejected')}
+
+
+def set_lead_reply(lead_id, reply):
+    reply_at = datetime.utcnow().isoformat()
+    with get_db() as conn:
+        conn.execute(
+            'UPDATE leads SET reply = ?, reply_at = ? WHERE id = ?',
+            (reply, reply_at, lead_id)
+        )
+
+
+def delete_lead(lead_id):
+    with get_db() as conn:
+        conn.execute('DELETE FROM leads WHERE id = ?', (lead_id,))
 
 
 def get_leads(limit=10, offset=0, status=None):
@@ -243,4 +300,29 @@ def clear_manager_active(chat_id):
     with get_db() as conn:
         conn.execute(
             'UPDATE manager_state SET active_session_id = NULL WHERE chat_id = ?', (str(chat_id),)
+        )
+
+
+def set_manager_reply_target(chat_id, lead_id):
+    """Mark that this manager's next plain message is a reply to the given review."""
+    with get_db() as conn:
+        conn.execute(
+            'INSERT INTO manager_state (chat_id, reply_lead_id) VALUES (?, ?) '
+            'ON CONFLICT(chat_id) DO UPDATE SET reply_lead_id = excluded.reply_lead_id',
+            (str(chat_id), lead_id)
+        )
+
+
+def get_manager_reply_target(chat_id):
+    with get_db() as conn:
+        r = conn.execute(
+            'SELECT reply_lead_id FROM manager_state WHERE chat_id = ?', (str(chat_id),)
+        ).fetchone()
+        return r['reply_lead_id'] if r else None
+
+
+def clear_manager_reply_target(chat_id):
+    with get_db() as conn:
+        conn.execute(
+            'UPDATE manager_state SET reply_lead_id = NULL WHERE chat_id = ?', (str(chat_id),)
         )

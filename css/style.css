@@ -1361,6 +1361,37 @@ select, textarea, input { font-size: 16px !important; }
   font-size: 1.12rem;
 }
 
+.testimonial-reply {
+  margin-top: 1rem;
+  padding: .85rem 1rem;
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 12px 12px 0;
+  background: rgba(212, 120, 176, .08);
+}
+.testimonial-reply-author {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: .78rem;
+  letter-spacing: .3px;
+  color: var(--color-accent);
+  margin-bottom: .3rem;
+}
+.testimonial-reply-author::before {
+  content: '\21A9';
+  font-size: .9rem;
+  opacity: .85;
+}
+.testimonial-reply p {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: .92rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
 /* ── Contact ── */
 .contact-grid {
   display: grid;
