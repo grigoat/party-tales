@@ -39,3 +39,6 @@ AI_BASE_URL = os.environ.get('AI_BASE_URL', 'https://api.groq.com/openai/v1')
 AI_MODEL = os.environ.get('AI_MODEL', 'llama-3.3-70b-versatile')
 # AI replies are enabled only while no human manager has joined the session.
 AI_ENABLED = os.environ.get('AI_ENABLED', '1') not in ('0', 'false', 'False', '')
+# Company knowledge base fed to the assistant so it answers like a real employee.
+# Plain text / Markdown; edit knowledge.md to teach Natalia more.
+AI_KNOWLEDGE_PATH = os.environ.get('AI_KNOWLEDGE_PATH', str(BASE_DIR / 'knowledge.md'))
