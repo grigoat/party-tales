@@ -10,8 +10,8 @@
   var POLL_URL = BACKEND + '/api/chat/poll';
   var HISTORY_URL = BACKEND + '/api/chat/history';
 
-  var POLL_OPEN_MS = 4000;     // while window is open
-  var POLL_IDLE_MS = 25000;    // while closed (just to refresh the unread badge)
+  var POLL_OPEN_MS = 3000;     // while window is open
+  var POLL_IDLE_MS = 10000;    // while closed (keeps unread badge + history fresh)
   var TEASER_DELAY_MS = 15000; // proactive greeting after this much time on the page
 
   // How long the "typing…" dots stay up before a reply is revealed, so answers
@@ -286,6 +286,14 @@
     });
   }
 
+  // Pin the view to the newest message. Deferred a frame so it works right after
+  // the panel is un-hidden (a hidden panel has no scrollHeight to measure).
+  function scrollToBottom() {
+    requestAnimationFrame(function () {
+      if (els.body) els.body.scrollTop = els.body.scrollHeight;
+    });
+  }
+
   function appendBubble(sender, text) {
     var wrap = document.createElement('div');
     wrap.className = 'pt-msg pt-msg-' + sender;
@@ -549,9 +557,11 @@
       if (freshDots || !els.typing) showTyping();
       clearTimeout(revealTimer);
       revealTimer = setTimeout(function () {
-        hideTyping();
-        appendPolled(m);
-        if (!isOpen) bumpBadge(1);
+        try {
+          hideTyping();
+          appendPolled(m);
+          if (!isOpen) bumpBadge(1);
+        } catch (e) { /* never let one bubble freeze the rest */ }
         idx++;
         step(true);
       }, remainingTypingDelay(m.text));
@@ -560,15 +570,22 @@
   }
 
   // Serialise playback so a poll landing mid-animation never clobbers the timer.
+  function drainQueue() {
+    if (!playQueue.length) { playing = false; return; }
+    var batch = playQueue; playQueue = [];
+    try {
+      playMessages(batch, drainQueue);
+    } catch (e) {
+      // Fall back to an instant render so playback can never get stuck.
+      renderNow(batch);
+      drainQueue();
+    }
+  }
   function enqueuePlay(msgs) {
     playQueue = playQueue.concat(msgs);
     if (playing) return;
     playing = true;
-    (function drain() {
-      if (!playQueue.length) { playing = false; return; }
-      var batch = playQueue; playQueue = [];
-      playMessages(batch, drain);
-    })();
+    drainQueue();
   }
 
   function poll() {
@@ -621,6 +638,7 @@
     clearBadge();
     updateNameField();
     showGreeting();
+    scrollToBottom(); // land at the latest message, not the top of the history
     setTimeout(function () { els.text.focus(); }, 50);
     poll();
     startPolling(POLL_OPEN_MS);
@@ -662,6 +680,12 @@
     build();
     applyChatLang();
     hookLanguage();
+    // Catch up instantly when the visitor returns to the tab, instead of waiting
+    // for the next poll tick.
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden && sessionId) poll();
+    });
+    window.addEventListener('focus', function () { if (sessionId) poll(); });
     if (sessionId) {
       // The server holds the authoritative conversation. Pull it so the visitor
       // sees exactly what the manager sees, then keep the unread badge fresh.
