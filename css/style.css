@@ -2164,6 +2164,7 @@ footer p { font-size: .85rem; font-weight: 300; }
 .pt-chat-body {
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior: contain; /* keep wheel/touch scrolling inside the chat, don't chain to the page */
   padding: 18px;
   display: flex;
   flex-direction: column;
@@ -2193,9 +2194,6 @@ footer p { font-size: .85rem; font-weight: 300; }
   border: 1px solid var(--color-border);
   border-bottom-left-radius: 5px;
 }
-/* Line every standalone manager reply up under the greeting bubble, so all of
-   Natalia's messages share one left edge (avatar 30px + 8px gap). */
-.pt-chat-body > .pt-msg-manager { margin-left: 38px; }
 .pt-msg-system {
   align-self: center;
   max-width: 92%;
@@ -2300,12 +2298,10 @@ footer p { font-size: .85rem; font-weight: 300; }
   align-self: flex-start;
   max-width: 90%;
 }
-.pt-msg-ava {
-  flex: none;
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  object-fit: cover;
-}
+/* The greeting bubble lines up flush-left with every other manager reply.
+   Natalia's avatar already lives in the panel header, so we don't repeat it
+   here (an extra avatar gutter only pushed her messages to the right). */
+.pt-msg-ava { display: none; }
 .pt-msg-greeting-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .pt-msg-greeting-name {
   font-size: 11px;
