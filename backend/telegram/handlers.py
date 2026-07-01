@@ -3,6 +3,7 @@ import logging
 from database import (
     get_leads, get_lead, update_lead_status, get_stats,
     get_chat_session, get_chat_messages, set_session_manager, set_session_status,
+    clear_session_manager,
     set_manager_active, get_manager_active, clear_manager_active, get_open_chat_sessions,
     get_reviews, get_review_counts, set_lead_reply, delete_lead,
     set_manager_reply_target, get_manager_reply_target, clear_manager_reply_target,
@@ -109,9 +110,11 @@ def _leave_chat(chat_id, message_id=None):
     sid = get_manager_active(chat_id)
     clear_manager_active(chat_id)
     if sid:
+        # Unbind the manager so the assistant answers again while nobody's here.
+        clear_session_manager(sid)
         from services.chat_service import add_system_message
         add_system_message(sid, '__manager_left__')
-        tg_send(chat_id, f'{EMOJI_DOOR} Вы вышли из чата #{sid}. Новые сообщения снова придут уведомлением.')
+        tg_send(chat_id, f'{EMOJI_DOOR} Вы вышли из чата #{sid}. Дальше отвечает ассистент, новые сообщения придут уведомлением.')
     else:
         tg_send(chat_id, 'Вы сейчас не в чате.')
 
@@ -121,6 +124,10 @@ def handle_chat_join(chat_id, session_id, message_id=None):
     if not session:
         tg_send(chat_id, f'Чат #{session_id} не найден.')
         return
+    # If this manager was in another chat, release it so the assistant resumes there.
+    prev = get_manager_active(chat_id)
+    if prev and prev != session_id:
+        clear_session_manager(prev)
     set_session_manager(session_id, chat_id)
     set_manager_active(chat_id, session_id)
 

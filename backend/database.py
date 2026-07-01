@@ -313,6 +313,16 @@ def set_session_manager(session_id, manager_chat_id):
         )
 
 
+def clear_session_manager(session_id):
+    """Unbind the manager from a session (they left) so the assistant takes over
+    again. Status goes back to 'waiting' — nobody human is on the chat now."""
+    with get_db() as conn:
+        conn.execute(
+            "UPDATE chat_sessions SET manager_chat_id = '', status = 'waiting' WHERE id = ?",
+            (session_id,)
+        )
+
+
 def set_session_status(session_id, status):
     with get_db() as conn:
         conn.execute('UPDATE chat_sessions SET status = ? WHERE id = ?', (status, session_id))
