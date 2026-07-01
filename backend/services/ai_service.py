@@ -13,7 +13,7 @@ from config import AI_API_KEY, AI_BASE_URL, AI_MODEL, AI_ENABLED, AI_KNOWLEDGE_P
 
 logger = logging.getLogger(__name__)
 
-MAX_REPLY_TOKENS = 600
+MAX_REPLY_TOKENS = 220
 # How much of the conversation to feed the model (most recent messages).
 HISTORY_LIMIT = 30
 
@@ -107,8 +107,12 @@ def _system_prompt(name: str, language: str) -> str:
         "3. Gently move toward leaving a contact (phone or messenger) so the studio can "
         "send a personal offer, OR toward booking a free consultation.\n\n"
         "Style rules:\n"
-        "- Write like a warm human in a messenger chat: short, friendly, 1–4 sentences. "
-        "A tasteful emoji is fine, don't overdo it.\n"
+        "- BREVITY IS YOUR MOST IMPORTANT RULE. Reply with at most 1–2 short sentences "
+        "(well under 250 characters), like a quick message tapped out on a phone. Never "
+        "write paragraphs and never list several services or prices in one message. Even "
+        "if the visitor asks you to 'tell them everything' or for the full price list, do "
+        "NOT dump it all — mention just one thing and ask a short question to find out "
+        "what they actually need. A tasteful emoji is fine, don't overdo it.\n"
         "- NEVER say or imply that you are an AI, a bot, an assistant, a language model, "
         "or automated. You are Natalia, the owner of PARTY TALES. If asked directly "
         "whether you are a bot, answer naturally as a person would and steer back to "

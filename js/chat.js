@@ -78,7 +78,7 @@
   var STRINGS = {
     de: {
       title: 'Schreiben Sie uns',
-      subOnline: 'Manager ist online',
+      subOnline: 'Natalia ist online',
       subOffline: 'Wir antworten gleich',
       placeholder: 'Nachricht eingeben…',
       send: 'Senden',
@@ -100,7 +100,7 @@
     },
     ru: {
       title: 'Напишите нам',
-      subOnline: 'Менеджер на связи',
+      subOnline: 'Наталия на связи',
       subOffline: 'Ответим в ближайшее время',
       placeholder: 'Введите сообщение…',
       send: 'Отправить',
@@ -122,7 +122,7 @@
     },
     en: {
       title: 'Chat with us',
-      subOnline: 'Manager is online',
+      subOnline: 'Natalia is online',
       subOffline: 'We reply shortly',
       placeholder: 'Type a message…',
       send: 'Send',
@@ -196,8 +196,8 @@
         '<div class="pt-chat-head">' +
           '<img class="pt-chat-head-ava" src="' + AVATAR + '" alt="" loading="lazy">' +
           '<div class="pt-chat-head-info">' +
-            '<span class="pt-chat-title">' + t('title') + '</span>' +
-            '<span class="pt-chat-status"><i class="pt-chat-dot"></i><span class="pt-chat-status-text">' + t('subOffline') + '</span></span>' +
+            '<span class="pt-chat-title">' + t('agentName') + '</span>' +
+            '<span class="pt-chat-status is-online"><i class="pt-chat-dot"></i><span class="pt-chat-status-text">' + t('subOnline') + '</span></span>' +
           '</div>' +
           '<button class="pt-chat-close" type="button" aria-label="' + t('close') + '">' + svgClose() + '</button>' +
         '</div>' +
@@ -379,6 +379,8 @@
     var firstManagerSeen = false;
     msgs.forEach(function (m) {
       if (m.sender === 'system') {
+        // Hide handoff markers on reload too, so the illusion survives a refresh.
+        if (m.text === '__manager_joined__' || m.text === '__manager_left__') return;
         out.push({ kind: 'system', sender: null, text: systemText(m.text) });
       } else if (m.sender === 'visitor') {
         out.push({ kind: 'bubble', sender: 'visitor', text: m.text });
@@ -436,9 +438,12 @@
   }
 
   function setManagerJoined(joined) {
+    // Tracked internally (for the join cue), but the header always reads "online":
+    // the visitor should feel Natalia is right there, whether the assistant or a
+    // human is answering.
     managerJoined = joined;
-    els.status.classList.toggle('is-online', joined);
-    els.statusText.textContent = joined ? t('subOnline') : t('subOffline');
+    els.status.classList.add('is-online');
+    els.statusText.textContent = t('subOnline');
   }
 
   // ---- network ----
@@ -495,8 +500,11 @@
     var gotManagerText = false;
     msgs.forEach(function (m) {
       if (m.sender === 'system') {
-        appendSystem(systemText(m.text));
+        // Keep the human/assistant handoff invisible — the visitor believes it's
+        // Natalia throughout. We still use the join marker to trigger the cue.
         if (m.text === '__manager_joined__') managerJoinedNow = true;
+        else if (m.text === '__manager_left__') { /* hidden */ }
+        else appendSystem(systemText(m.text));
       } else {
         appendBubble('manager', m.text);
         gotManagerText = true;
@@ -587,8 +595,8 @@
   // ---- language refresh ----
   function applyChatLang() {
     if (!els.title) return;
-    els.title.textContent = t('title');
-    els.statusText.textContent = managerJoined ? t('subOnline') : t('subOffline');
+    els.title.textContent = t('agentName');
+    els.statusText.textContent = t('subOnline');
     els.text.placeholder = t('placeholder');
     els.name.placeholder = t('namePlaceholder');
     els.fab.setAttribute('aria-label', t('open'));
