@@ -389,7 +389,9 @@ nav.scrolled + * .lang-dropdown { /* handled by data attribute */ }
 .hero-video-overlay {
   position: absolute; inset: 0;
   background: linear-gradient(180deg, rgba(26,22,24,.78) 0%, rgba(26,22,24,.7) 30%, rgba(26,22,24,.7) 100%);
-  z-index: 1;
+  /* Must stay above every video layer: the crossfade juggles clips between
+     z-index 1 and 2, so the overlay sits above both to keep them all darkened. */
+  z-index: 5;
 }
 
 /* ── Services Preview (homepage) ── */
