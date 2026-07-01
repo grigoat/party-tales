@@ -2163,6 +2163,7 @@ footer p { font-size: .85rem; font-weight: 300; }
 
 .pt-chat-body {
   flex: 1;
+  min-height: 0; /* let the flex item shrink so overflow-y:auto actually scrolls (instead of the page) */
   overflow-y: auto;
   overscroll-behavior: contain; /* keep wheel/touch scrolling inside the chat, don't chain to the page */
   padding: 18px;
