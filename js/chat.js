@@ -487,7 +487,10 @@
       var first = !sessionId;
       sessionId = data.session_id;
       lsSet(LS_SESSION, sessionId);
-      if (data.message_id && data.message_id > lastId) {
+      if (data.message_id) {
+        // Trust the id of the message we just created. If it's lower than what we
+        // had stored, the server DB was reset — snapping lastId back here resyncs
+        // us so the reply is polled in, instead of polling past it forever.
         lastId = data.message_id;
         lsSet(LS_LAST, lastId);
       }
