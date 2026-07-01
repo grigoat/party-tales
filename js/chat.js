@@ -492,29 +492,83 @@
   }
 
   var revealTimer = null;
+  var playing = false;
+  var playQueue = [];
 
-  // Paint a batch of manager/system messages into the panel.
-  function renderMessages(msgs) {
-    var unread = 0;
-    var managerJoinedNow = false;
-    var gotManagerText = false;
+  // Append one polled message. Handoff markers ("manager joined/left") stay
+  // invisible so the visitor believes it's Natalia throughout.
+  function appendPolled(m) {
+    if (m.sender === 'system') {
+      if (m.text === '__manager_joined__' || m.text === '__manager_left__') return;
+      appendSystem(systemText(m.text));
+    } else {
+      appendBubble('manager', m.text);
+    }
+  }
+
+  function batchFlags(msgs) {
+    var joined = false, hasText = false;
     msgs.forEach(function (m) {
-      if (m.sender === 'system') {
-        // Keep the human/assistant handoff invisible — the visitor believes it's
-        // Natalia throughout. We still use the join marker to trigger the cue.
-        if (m.text === '__manager_joined__') managerJoinedNow = true;
-        else if (m.text === '__manager_left__') { /* hidden */ }
-        else appendSystem(systemText(m.text));
-      } else {
-        appendBubble('manager', m.text);
-        gotManagerText = true;
-        unread++;
-      }
+      if (m.sender === 'system') { if (m.text === '__manager_joined__') joined = true; }
+      else hasText = true;
     });
+    return { joined: joined, hasText: hasText };
+  }
+
+  // Paint a batch at once — used when the panel is closed (nobody's watching the
+  // dots, so just make sure the messages and unread badge are up to date).
+  function renderNow(msgs) {
+    var unread = 0;
+    msgs.forEach(function (m) { appendPolled(m); if (m.sender !== 'system') unread++; });
     if (unread && !isOpen) bumpBadge(unread);
-    // She just joined and hasn't written yet — show the "typing" cue, since this
-    // is the only real signal Telegram gives us that a human is about to reply.
-    if (managerJoinedNow && !gotManagerText) showTyping();
+    var f = batchFlags(msgs);
+    if (f.joined && !f.hasText) showTyping();
+  }
+
+  // Reveal a batch one bubble at a time, dots up before each, so a multi-part
+  // answer reads like Natalia sending a few quick messages in a row.
+  function playMessages(msgs, done) {
+    var f = batchFlags(msgs);
+    var idx = 0;
+    function finish() {
+      hideTyping();
+      // Just joined and nothing typed yet — leave the cue up; she's about to write.
+      if (f.joined && !f.hasText) showTyping();
+      if (done) done();
+    }
+    function step(freshDots) {
+      if (idx >= msgs.length) { finish(); return; }
+      var m = msgs[idx];
+      if (m.sender === 'system') { // notices appear instantly, no typing act
+        hideTyping();
+        appendPolled(m);
+        idx++;
+        step(true);
+        return;
+      }
+      if (freshDots || !els.typing) showTyping();
+      clearTimeout(revealTimer);
+      revealTimer = setTimeout(function () {
+        hideTyping();
+        appendPolled(m);
+        if (!isOpen) bumpBadge(1);
+        idx++;
+        step(true);
+      }, remainingTypingDelay(m.text));
+    }
+    step(false); // first bubble reuses the dots already up since the visitor sent
+  }
+
+  // Serialise playback so a poll landing mid-animation never clobbers the timer.
+  function enqueuePlay(msgs) {
+    playQueue = playQueue.concat(msgs);
+    if (playing) return;
+    playing = true;
+    (function drain() {
+      if (!playQueue.length) { playing = false; return; }
+      var batch = playQueue; playQueue = [];
+      playMessages(batch, drain);
+    })();
   }
 
   function poll() {
@@ -532,21 +586,8 @@
       // the reveal is still pending behind the dots.
       msgs.forEach(function (m) { if (m.id > lastId) lastId = m.id; });
       lsSet(LS_LAST, lastId);
-
-      if (els.typing) {
-        // Let the dots breathe before the answer appears — never an instant pop.
-        var firstText = '';
-        for (var i = 0; i < msgs.length; i++) {
-          if (msgs[i].sender !== 'system') { firstText = msgs[i].text; break; }
-        }
-        clearTimeout(revealTimer);
-        revealTimer = setTimeout(function () {
-          hideTyping();
-          renderMessages(msgs);
-        }, remainingTypingDelay(firstText));
-      } else {
-        renderMessages(msgs);
-      }
+      if (isOpen) enqueuePlay(msgs);
+      else renderNow(msgs);
     }).catch(function () { /* network hiccup — keep polling */ });
   }
 

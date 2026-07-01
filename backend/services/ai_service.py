@@ -8,6 +8,7 @@ the same avatar and name as a human reply.
 """
 import logging
 import os
+import re
 
 from config import AI_API_KEY, AI_BASE_URL, AI_MODEL, AI_ENABLED, AI_KNOWLEDGE_PATH
 
@@ -124,6 +125,44 @@ def _system_prompt(name: str, language: str) -> str:
         "message text to send to the visitor — no preamble, no quotes, no labels."
         + knowledge_block
     )
+
+
+# A single reply is delivered to the visitor as up to this many separate chat
+# bubbles, so a longer answer reads like Natalia sending a few quick messages.
+MAX_BUBBLES = 3
+BUBBLE_TARGET_CHARS = 130
+
+
+def split_reply(text: str) -> list[str]:
+    """Break a reply into a few short messages on sentence boundaries.
+
+    Short replies stay a single message; longer ones are packed into up to
+    MAX_BUBBLES chunks so the chat feels like a person typing in bursts.
+    """
+    text = (text or '').strip()
+    if not text:
+        return []
+    parts = [p.strip() for p in re.split(r'(?<=[.!?…])\s+', text) if p.strip()]
+    if not parts:
+        return [text]
+
+    chunks: list[str] = []
+    cur = ''
+    for p in parts:
+        if cur and len(cur) + 1 + len(p) > BUBBLE_TARGET_CHARS:
+            chunks.append(cur)
+            cur = p
+        else:
+            cur = f'{cur} {p}'.strip() if cur else p
+    if cur:
+        chunks.append(cur)
+
+    # Never send more bubbles than allowed — fold the overflow into the last one.
+    if len(chunks) > MAX_BUBBLES:
+        head = chunks[:MAX_BUBBLES - 1]
+        tail = ' '.join(chunks[MAX_BUBBLES - 1:])
+        chunks = head + [tail]
+    return chunks
 
 
 def generate_reply(session: dict, history: list) -> str | None:

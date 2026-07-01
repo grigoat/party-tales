@@ -84,7 +84,10 @@ def _ai_reply(session_id):
     session = database.get_chat_session(session_id)
     if not session or session.get('manager_chat_id'):
         return
-    database.add_chat_message(session_id, 'manager', reply)
+    # Deliver the answer to the visitor as a few short bubbles (feels human),
+    # each its own chat message.
+    for chunk in ai_service.split_reply(reply):
+        database.add_chat_message(session_id, 'manager', chunk)
     # Keep the managers' group in the loop so a human can take over with context.
     if TOKEN and CHAT_ID:
         tg_send(
