@@ -14,6 +14,12 @@
   var POLL_IDLE_MS = 25000;    // while closed (just to refresh the unread badge)
   var TEASER_DELAY_MS = 15000; // proactive greeting after this much time on the page
 
+  // How long the "typing…" dots stay up before a reply is revealed, so answers
+  // never pop in instantly. Scales with reply length, within these bounds.
+  var TYPING_MIN_MS = 1400;
+  var TYPING_PER_CHAR_MS = 15;
+  var TYPING_MAX_MS = 3500;
+
   var AVATAR = 'images/about-natalia.webp';
 
   // ---- localStorage state ----
@@ -292,6 +298,7 @@
   // "Typing…" indicator — three shimmering dots shown while we wait for a reply.
   // Ephemeral: never recorded in history, always the last node in the body.
   var typingTimer = null;
+  var typingStart = 0;
   function showTyping() {
     hideTyping();
     var wrap = document.createElement('div');
@@ -300,10 +307,18 @@
     wrap.innerHTML = '<i></i><i></i><i></i>';
     els.body.appendChild(wrap);
     els.typing = wrap;
+    typingStart = Date.now();
     els.body.scrollTop = els.body.scrollHeight;
     // Don't leave the dots spinning forever if a reply is slow (e.g. a human
     // manager who hasn't answered yet).
     typingTimer = setTimeout(hideTyping, 20000);
+  }
+
+  // How long the dots should still linger before revealing a reply of `text`,
+  // given they've already been visible since `typingStart`.
+  function remainingTypingDelay(text) {
+    var want = Math.min(TYPING_MIN_MS + (text ? text.length : 0) * TYPING_PER_CHAR_MS, TYPING_MAX_MS);
+    return Math.max(0, want - (Date.now() - typingStart));
   }
   function hideTyping() {
     if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
@@ -471,6 +486,29 @@
     });
   }
 
+  var revealTimer = null;
+
+  // Paint a batch of manager/system messages into the panel.
+  function renderMessages(msgs) {
+    var unread = 0;
+    var managerJoinedNow = false;
+    var gotManagerText = false;
+    msgs.forEach(function (m) {
+      if (m.sender === 'system') {
+        appendSystem(systemText(m.text));
+        if (m.text === '__manager_joined__') managerJoinedNow = true;
+      } else {
+        appendBubble('manager', m.text);
+        gotManagerText = true;
+        unread++;
+      }
+    });
+    if (unread && !isOpen) bumpBadge(unread);
+    // She just joined and hasn't written yet — show the "typing" cue, since this
+    // is the only real signal Telegram gives us that a human is about to reply.
+    if (managerJoinedNow && !gotManagerText) showTyping();
+  }
+
   function poll() {
     if (!sessionId) return;
     var url = POLL_URL + '?session_id=' + encodeURIComponent(sessionId) +
@@ -481,19 +519,26 @@
     }).then(function (data) {
       if (data.manager_joined !== undefined) setManagerJoined(data.manager_joined);
       var msgs = data.messages || [];
-      if (msgs.length) hideTyping(); // a reply arrived — stop the dots
-      var unread = 0;
-      msgs.forEach(function (m) {
-        if (m.id > lastId) { lastId = m.id; }
-        if (m.sender === 'system') {
-          appendSystem(systemText(m.text));
-        } else {
-          appendBubble('manager', m.text);
-          unread++;
-        }
-      });
+      if (!msgs.length) return;
+      // Advance the cursor now so a concurrent poll won't re-fetch these while
+      // the reveal is still pending behind the dots.
+      msgs.forEach(function (m) { if (m.id > lastId) lastId = m.id; });
       lsSet(LS_LAST, lastId);
-      if (unread && !isOpen) bumpBadge(unread);
+
+      if (els.typing) {
+        // Let the dots breathe before the answer appears — never an instant pop.
+        var firstText = '';
+        for (var i = 0; i < msgs.length; i++) {
+          if (msgs[i].sender !== 'system') { firstText = msgs[i].text; break; }
+        }
+        clearTimeout(revealTimer);
+        revealTimer = setTimeout(function () {
+          hideTyping();
+          renderMessages(msgs);
+        }, remainingTypingDelay(firstText));
+      } else {
+        renderMessages(msgs);
+      }
     }).catch(function () { /* network hiccup — keep polling */ });
   }
 
