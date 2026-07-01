@@ -289,6 +289,30 @@
     record('bubble', sender, text);
   }
 
+  // "Typing…" indicator — three shimmering dots shown while we wait for a reply.
+  // Ephemeral: never recorded in history, always the last node in the body.
+  var typingTimer = null;
+  function showTyping() {
+    hideTyping();
+    var wrap = document.createElement('div');
+    wrap.className = 'pt-msg pt-msg-manager pt-typing';
+    wrap.setAttribute('aria-hidden', 'true');
+    wrap.innerHTML = '<i></i><i></i><i></i>';
+    els.body.appendChild(wrap);
+    els.typing = wrap;
+    els.body.scrollTop = els.body.scrollHeight;
+    // Don't leave the dots spinning forever if a reply is slow (e.g. a human
+    // manager who hasn't answered yet).
+    typingTimer = setTimeout(hideTyping, 20000);
+  }
+  function hideTyping() {
+    if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
+    if (els.typing && els.typing.parentNode) {
+      els.typing.parentNode.removeChild(els.typing);
+    }
+    els.typing = null;
+  }
+
   // `ephemeral` system notices (e.g. send errors) are shown but not persisted.
   function appendSystem(text, ephemeral) {
     var wrap = document.createElement('div');
@@ -411,6 +435,7 @@
     appendBubble('visitor', text);
     els.text.value = '';
     autoGrow();
+    showTyping();
 
     var name = els.name.value.trim();
     if (name) lsSet(LS_NAME, name);
@@ -438,9 +463,10 @@
         lastId = data.message_id;
         lsSet(LS_LAST, lastId);
       }
-      if (first) { appendSystem(t('sent')); updateNameField(); }
+      if (first) { updateNameField(); }
       poll();
     }).catch(function () {
+      hideTyping();
       appendSystem(t('error'), true);
     });
   }
@@ -454,8 +480,10 @@
       return r.ok ? r.json() : Promise.reject(r.status);
     }).then(function (data) {
       if (data.manager_joined !== undefined) setManagerJoined(data.manager_joined);
+      var msgs = data.messages || [];
+      if (msgs.length) hideTyping(); // a reply arrived — stop the dots
       var unread = 0;
-      (data.messages || []).forEach(function (m) {
+      msgs.forEach(function (m) {
         if (m.id > lastId) { lastId = m.id; }
         if (m.sender === 'system') {
           appendSystem(systemText(m.text));

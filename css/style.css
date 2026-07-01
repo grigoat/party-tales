@@ -2204,6 +2204,34 @@ footer p { font-size: .85rem; font-weight: 300; }
   border-radius: var(--radius-pill);
 }
 
+/* "Typing…" indicator — three shimmering dots, WhatsApp style (no label). */
+.pt-typing {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 14px;
+  min-height: 0;
+}
+.pt-typing i {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+  opacity: 0.3;
+  animation: pt-typing-wave 1.3s ease-in-out infinite;
+}
+.pt-typing i:nth-child(2) { animation-delay: 0.18s; }
+.pt-typing i:nth-child(3) { animation-delay: 0.36s; }
+@keyframes pt-typing-wave {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30%          { opacity: 1;   transform: translateY(-3px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pt-typing i { animation-duration: 0.001ms; opacity: 0.6; }
+}
+
 .pt-chat-input {
   display: flex;
   flex-direction: column;
