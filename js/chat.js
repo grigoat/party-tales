@@ -505,6 +505,9 @@
   var revealTimer = null;
   var playing = false;
   var playQueue = [];
+  // Ids we've already shown/queued, so two overlapping polls (e.g. the explicit
+  // poll after sending + an interval tick) can never render the same reply twice.
+  var seenIds = {};
 
   // Append one polled message. Handoff markers ("manager joined/left") stay
   // invisible so the visitor believes it's Natalia throughout.
@@ -602,12 +605,20 @@
       if (data.manager_joined !== undefined) setManagerJoined(data.manager_joined);
       var msgs = data.messages || [];
       if (!msgs.length) return;
-      // Advance the cursor now so a concurrent poll won't re-fetch these while
-      // the reveal is still pending behind the dots.
-      msgs.forEach(function (m) { if (m.id > lastId) lastId = m.id; });
+      // Drop anything already seen and advance the cursor now, so a concurrent
+      // poll (the after-send poll racing an interval tick) can't render the same
+      // reply twice while it's still pending behind the typing dots.
+      var fresh = [];
+      msgs.forEach(function (m) {
+        if (seenIds[m.id]) return;
+        seenIds[m.id] = true;
+        if (m.id > lastId) lastId = m.id;
+        fresh.push(m);
+      });
+      if (!fresh.length) return;
       lsSet(LS_LAST, lastId);
-      if (isOpen) enqueuePlay(msgs);
-      else renderNow(msgs);
+      if (isOpen) enqueuePlay(fresh);
+      else renderNow(fresh);
     }).catch(function () { /* network hiccup — keep polling */ });
   }
 
