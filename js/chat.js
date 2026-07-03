@@ -243,6 +243,11 @@
         onSubmit(e);
       }
     });
+    // On phones the dim backdrop is root's ::before, so taps on it target the
+    // root element itself — treat that as "tap outside to close".
+    root.addEventListener('click', function (e) {
+      if (e.target === root && isOpen) closePanel();
+    });
     els.teaser.addEventListener('click', function () { hideTeaser(); openPanel(); });
     els.teaserClose.addEventListener('click', function (e) {
       e.stopPropagation();
@@ -652,16 +657,23 @@
   var mobileMq = window.matchMedia('(max-width: 480px)');
   function isMobile() { return mobileMq.matches; }
 
+  var KB_GAP = 10; // window margin while the keyboard is up (matches the CSS margin)
+
   function fitToViewport() {
     if (!isOpen || !isMobile() || !window.visualViewport) return;
     var vv = window.visualViewport;
-    els.panel.style.height = Math.round(vv.height) + 'px';
-    els.panel.style.top = Math.round(vv.offsetTop) + 'px';
+    // Keyboard closed — the CSS margins (incl. safe areas) position the window.
+    var kbOpen = (window.innerHeight - vv.height) > 60 || vv.offsetTop > 0;
+    if (!kbOpen) { unfitViewport(); return; }
+    els.panel.style.top = Math.round(vv.offsetTop + KB_GAP) + 'px';
+    els.panel.style.bottom = 'auto';
+    els.panel.style.height = Math.round(vv.height - KB_GAP * 2) + 'px';
     scrollToBottom(); // keep the latest message above the keyboard
   }
   function unfitViewport() {
-    els.panel.style.height = '';
     els.panel.style.top = '';
+    els.panel.style.bottom = '';
+    els.panel.style.height = '';
   }
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', fitToViewport);

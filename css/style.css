@@ -2371,36 +2371,39 @@ footer p { font-size: .85rem; font-weight: 300; }
 
 @media (max-width: 480px) {
   .pt-chat { right: 14px; bottom: 14px; }
-  /* Fullscreen chat on phones. Fixed to the viewport (not the launcher), so JS
-     can pin it to the visual viewport when the on-screen keyboard opens —
-     keeping the header (name + status) visible above the keyboard. */
+  /* Dimmed backdrop: the site stays visible behind the chat window, just muted.
+     A tap on it closes the chat (wired in chat.js — taps on this ::before
+     target the .pt-chat root). */
+  .pt-chat.is-open::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(31, 21, 40, 0.45);
+    animation: ptChatDim 0.25s ease;
+  }
+  /* Windowed chat on phones: a floating card with margins, not fullscreen.
+     Fixed to the viewport (not the launcher), so JS can pin it to the visual
+     viewport when the on-screen keyboard opens — keeping the header
+     (name + status) visible above the keyboard. */
   .pt-chat-panel {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: auto;
-    width: 100%;
+    top: calc(10px + env(safe-area-inset-top, 0px));
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    width: auto;
     max-width: none;
-    height: 100vh;  /* fallback */
-    height: 100dvh; /* tracks collapsing browser UI */
+    height: auto;
     max-height: none;
-    border-radius: 0;
-    border: none;
     transform-origin: center bottom;
   }
-  .pt-chat-head {
-    flex: none;
-    padding-top: calc(14px + env(safe-area-inset-top));
-  }
-  .pt-chat-input {
-    flex: none;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom));
-  }
-  /* Freeze the page behind the fullscreen chat so the keyboard can't scroll it */
+  .pt-chat-head { flex: none; }
+  .pt-chat-input { flex: none; }
+  /* Freeze the page behind the chat so the keyboard can't scroll it */
   body.pt-chat-open { overflow: hidden; }
   .pt-chat-teaser { width: calc(100vw - 40px); }
 }
+@keyframes ptChatDim { from { opacity: 0; } to { opacity: 1; } }
 
 @media (prefers-reduced-motion: reduce) {
   .pt-chat-panel { animation: none; }
