@@ -5,7 +5,8 @@
 ## Если gh не установлен
 
 ```bash
-curl -sL -o /tmp/gh.tar.gz "https://github.com/cli/cli/releases/latest/download/gh_2.95.0_linux_amd64.tar.gz"
+# Версия закреплена: «latest/download/gh_X.Y.Z…» ломается (404), как только выходит новый релиз
+curl -sL -o /tmp/gh.tar.gz "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_amd64.tar.gz"
 mkdir -p /tmp/gh_install
 tar -xzf /tmp/gh.tar.gz -C /tmp/gh_install --strip-components=1
 ```
