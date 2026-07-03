@@ -2371,11 +2371,34 @@ footer p { font-size: .85rem; font-weight: 300; }
 
 @media (max-width: 480px) {
   .pt-chat { right: 14px; bottom: 14px; }
+  /* Fullscreen chat on phones. Fixed to the viewport (not the launcher), so JS
+     can pin it to the visual viewport when the on-screen keyboard opens —
+     keeping the header (name + status) visible above the keyboard. */
   .pt-chat-panel {
-    width: calc(100vw - 24px);
-    height: calc(100vh - 96px);
-    bottom: 70px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: auto;
+    width: 100%;
+    max-width: none;
+    height: 100vh;  /* fallback */
+    height: 100dvh; /* tracks collapsing browser UI */
+    max-height: none;
+    border-radius: 0;
+    border: none;
+    transform-origin: center bottom;
   }
+  .pt-chat-head {
+    flex: none;
+    padding-top: calc(14px + env(safe-area-inset-top));
+  }
+  .pt-chat-input {
+    flex: none;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+  /* Freeze the page behind the fullscreen chat so the keyboard can't scroll it */
+  body.pt-chat-open { overflow: hidden; }
   .pt-chat-teaser { width: calc(100vw - 40px); }
 }
 

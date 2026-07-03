@@ -643,17 +643,52 @@
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
   }
 
+  // ---- mobile keyboard handling ----
+  // On phones the panel is fullscreen (position: fixed). When the on-screen
+  // keyboard opens, iOS/Android shrink only the *visual* viewport — the layout
+  // viewport (and 100dvh) stays tall, so the header would slide off-screen.
+  // Pin the panel to the visual viewport instead: height = what's actually
+  // visible, top = how far the visual viewport is panned down.
+  var mobileMq = window.matchMedia('(max-width: 480px)');
+  function isMobile() { return mobileMq.matches; }
+
+  function fitToViewport() {
+    if (!isOpen || !isMobile() || !window.visualViewport) return;
+    var vv = window.visualViewport;
+    els.panel.style.height = Math.round(vv.height) + 'px';
+    els.panel.style.top = Math.round(vv.offsetTop) + 'px';
+    scrollToBottom(); // keep the latest message above the keyboard
+  }
+  function unfitViewport() {
+    els.panel.style.height = '';
+    els.panel.style.top = '';
+  }
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', fitToViewport);
+    window.visualViewport.addEventListener('scroll', fitToViewport);
+  }
+  if (mobileMq.addEventListener) {
+    mobileMq.addEventListener('change', function () {
+      unfitViewport();
+      fitToViewport();
+    });
+  }
+
   // ---- open/close ----
   function openPanel() {
     isOpen = true;
     hideTeaser();
     els.panel.hidden = false;
     els.root.classList.add('is-open');
+    document.body.classList.add('pt-chat-open');
     clearBadge();
     updateNameField();
     showGreeting();
     scrollToBottom(); // land at the latest message, not the top of the history
-    setTimeout(function () { els.text.focus(); }, 50);
+    fitToViewport();
+    // Desktop only: autofocus on a phone would pop the keyboard over a chat the
+    // visitor hasn't even seen yet.
+    if (!isMobile()) setTimeout(function () { els.text.focus(); }, 50);
     poll();
     startPolling(POLL_OPEN_MS);
   }
@@ -661,6 +696,8 @@
     isOpen = false;
     els.panel.hidden = true;
     els.root.classList.remove('is-open');
+    document.body.classList.remove('pt-chat-open');
+    unfitViewport();
     if (sessionId) startPolling(POLL_IDLE_MS); else stopPolling();
   }
   function toggle() { isOpen ? closePanel() : openPanel(); }
