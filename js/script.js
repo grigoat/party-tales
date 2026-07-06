@@ -1489,4 +1489,55 @@ document.addEventListener('DOMContentLoaded', function() {
       }));
     });
   }
+
+  // ── Away notice: Natalia is in Moscow 04.07–12.08.2026, orders paused ──
+  (function() {
+    var AWAY_KEY = 'ptAwayNote2026';
+    // Self-destructs on 13 Aug 2026 — no cleanup deploy needed
+    if (new Date() >= new Date(2026, 7, 13)) return;
+    try { if (localStorage.getItem(AWAY_KEY)) return; } catch (e) {}
+
+    // i18n.js has already applied translations by now, so the note fills in
+    // its own strings; the data-i18n attributes keep later language switches working.
+    var t = (typeof translations !== 'undefined' &&
+             translations[typeof currentLang !== 'undefined' ? currentLang : 'de']) || {};
+    var onContacts = /contacts\.html/.test(window.location.pathname);
+
+    var note = document.createElement('aside');
+    note.className = 'away-note';
+    note.id = 'awayNote';
+    note.setAttribute('role', 'note');
+    note.innerHTML =
+      '<span class="away-note-ava"><img src="images/about-natalia.webp" alt="Natalia" loading="lazy"></span>' +
+      '<div class="away-note-body">' +
+        '<div class="away-note-label" data-i18n="away.label">' + (t['away.label'] || 'Записка от Наталии') + '</div>' +
+        '<p class="away-note-text" data-i18n="away.text">' + (t['away.text'] || 'Друзья, я на время уезжаю в Москву — с 4 июля по 12 августа студия не сможет принимать и выполнять заказы. 13 августа я вернусь — праздники после этой даты можно бронировать уже сейчас!') + '</p>' +
+        '<a class="away-note-cta" href="' + (onContacts ? '#contactForm' : 'contacts.html') + '" data-i18n="away.cta">' + (t['away.cta'] || 'Забронировать дату после 12 августа &rarr;') + '</a>' +
+      '</div>' +
+      '<button class="away-note-close" type="button" data-i18n-aria="away.close" aria-label="' + (t['away.close'] || 'Закрыть уведомление') + '">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>' +
+      '</button>';
+    document.body.appendChild(note);
+
+    // Expose the note height so back-to-top can stack above it (see style.css)
+    function syncNoteHeight() {
+      document.documentElement.style.setProperty('--away-note-h', note.offsetHeight + 'px');
+    }
+    document.body.classList.add('has-away-note');
+    syncNoteHeight();
+    if (typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(syncNoteHeight).observe(note);
+    } else {
+      window.addEventListener('resize', syncNoteHeight);
+    }
+
+    setTimeout(function() { note.classList.add('is-in'); }, 900);
+
+    note.querySelector('.away-note-close').addEventListener('click', function() {
+      try { localStorage.setItem(AWAY_KEY, '1'); } catch (e) {}
+      note.classList.remove('is-in');
+      document.body.classList.remove('has-away-note');
+      setTimeout(function() { note.remove(); }, 600);
+    });
+  })();
 });

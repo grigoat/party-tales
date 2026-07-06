@@ -2415,3 +2415,88 @@ footer p { font-size: .85rem; font-weight: 300; }
 
 
 
+
+/* ── Away notice: Natalia's seasonal note (04.07–12.08.2026) ── */
+.away-note {
+  position: fixed;
+  left: 2rem;
+  bottom: 2rem;
+  z-index: 8900; /* under the chat widget (9000), above back-to-top (999) */
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  max-width: 400px;
+  padding: 1.15rem 2.6rem 1.15rem 1.15rem;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .6s var(--ease-out-expo), transform .6s var(--ease-out-expo);
+  pointer-events: none;
+}
+.away-note.is-in { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.away-note-ava {
+  position: relative;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex: none;
+  border: 2px solid var(--color-accent-light);
+}
+/* The source photo is full-height — zoom the circle in on Natalia's face */
+.away-note-ava img {
+  position: absolute;
+  width: 400%;
+  max-width: none;
+  left: -140%;
+  top: -126%;
+}
+.away-note-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--color-accent);
+  margin-bottom: .35rem;
+}
+.away-note-text {
+  margin: 0 0 .5rem;
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+}
+.away-note-cta {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+.away-note-cta:hover { color: var(--color-accent-hover); }
+.away-note-close {
+  position: absolute;
+  top: .55rem; right: .55rem;
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.away-note-close:hover { background: var(--color-bg-alt); color: var(--color-text); }
+.away-note-close svg { width: 14px; height: 14px; }
+/* Keep back-to-top clear of the note (desktop shares the bottom-left corner) */
+body.has-away-note .back-to-top { bottom: calc(2rem + var(--away-note-h, 0px) + .75rem); }
+@media (max-width: 767px) {
+  /* Sits above the chat bubble zone (fab: 60px at bottom/right 14px), full width */
+  .away-note { left: 14px; right: 14px; bottom: 86px; max-width: none; padding: 1rem 2.4rem 1rem 1rem; }
+  .away-note-ava { width: 44px; height: 44px; }
+  /* On phones back-to-top (48px at bottom 1rem) fits under the note — no shift */
+  body.has-away-note .back-to-top { bottom: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .away-note { transition: opacity .2s ease; transform: none; }
+}

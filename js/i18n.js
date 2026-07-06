@@ -269,6 +269,10 @@ var translations = {
     "gallery.meta.desc": "PARTY TALES Portfolio — Ballondekoration f&uuml;r Geburtstage, Hochzeiten, Firmenevents und Baby Shower in der Schweiz.",
     "contacts.meta.desc": "Kontaktieren Sie PARTY TALES f&uuml;r Ballondekoration in Zug, Luzern, Z&uuml;rich. Kostenlose Lieferung ab 100 CHF.",
     "terms.meta.desc": "Allgemeine Gesch&auml;ftsbedingungen f&uuml;r PARTY TALES Ballondekoration in der Schweiz.",
+    "away.label": "Eine Notiz von Natalia",
+    "away.text": "Liebe Freunde, ich verreise f&uuml;r eine Weile nach Moskau &mdash; vom 4.&nbsp;Juli bis zum 12.&nbsp;August kann das Studio keine Auftr&auml;ge annehmen oder ausf&uuml;hren. Ab dem 13.&nbsp;August bin ich wieder da &mdash; Feste nach diesem Datum k&ouml;nnen Sie schon jetzt reservieren!",
+    "away.cta": "Termin nach dem 12. August reservieren&nbsp;&rarr;",
+    "away.close": "Hinweis schliessen",
   },
 
   ru: {
@@ -541,6 +545,10 @@ var translations = {
     "gallery.meta.desc": "Портфолио PARTY TALES — декор из шаров для дней рождения, свадеб, корпоративов и Baby Shower в Швейцарии.",
     "contacts.meta.desc": "Свяжитесь с PARTY TALES для оформления шарами в Цуге, Люцерне, Цюрихе. Бесплатная доставка от 100 CHF.",
     "terms.meta.desc": "Условия и положения PARTY TALES — оформление праздников воздушными шарами в Швейцарии.",
+    "away.label": "Записка от Наталии",
+    "away.text": "Друзья, я на время уезжаю в Москву — с 4&nbsp;июля по 12&nbsp;августа студия не сможет принимать и выполнять заказы. 13&nbsp;августа я вернусь — праздники после этой даты можно бронировать уже сейчас!",
+    "away.cta": "Забронировать дату после 12 августа&nbsp;&rarr;",
+    "away.close": "Закрыть уведомление",
   },
 
   en: {
@@ -813,6 +821,10 @@ var translations = {
     "gallery.meta.desc": "Browse the PARTY TALES portfolio — balloon decorations for birthdays, weddings, corporate events and baby showers in Switzerland.",
     "contacts.meta.desc": "Contact PARTY TALES for premium balloon decoration in Zug, Lucerne, Zurich. Free delivery over 100 CHF.",
     "terms.meta.desc": "Terms and Conditions for PARTY TALES balloon decoration services in Switzerland.",
+    "away.label": "A note from Natalia",
+    "away.text": "Dear friends, I&rsquo;m away in Moscow for a little while &mdash; from 4&nbsp;July to 12&nbsp;August the studio can&rsquo;t take on or fulfil orders. I&rsquo;ll be back on 13&nbsp;August &mdash; and celebrations after that date can be booked already now!",
+    "away.cta": "Book a date after 12 August&nbsp;&rarr;",
+    "away.close": "Close notice",
   }
 };
 
