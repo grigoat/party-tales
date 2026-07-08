@@ -937,6 +937,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Navbar scroll
   var navbar = document.getElementById('navbar');
   var backToTop = document.getElementById('backToTop');
+  var scrollCue = document.querySelector('.scroll-cue');
   if (navbar && document.querySelector('.page-hero')) {
     navbar.classList.add('scrolled');
   }
@@ -961,9 +962,19 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     if (backToTop) backToTop.classList.toggle('show', y > 500);
+    if (scrollCue) scrollCue.classList.toggle('cue-hidden', y > 40);
     lastScrollY = y;
   }
   window.addEventListener('scroll', onScroll, { passive: true });
+
+  // Scroll cue → smooth-scroll to the form
+  if (scrollCue) {
+    scrollCue.addEventListener('click', function(e) {
+      e.preventDefault();
+      var target = document.querySelector('.contact-grid') || document.getElementById('contactForm');
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
 
   // Back to top
   if (backToTop) {

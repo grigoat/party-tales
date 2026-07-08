@@ -622,6 +622,36 @@ section { padding: clamp(3rem, 6vw, 6rem) clamp(1.5rem, 4vw, 3rem); }
   font-weight: 300;
   line-height: 1.7;
 }
+.scroll-cue {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;
+  margin-top: 2rem;
+  color: var(--color-accent);
+  text-decoration: none;
+  font-size: .72rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: color .25s, opacity .4s ease, transform .4s ease;
+  animation: scrollCueBounce 1.9s ease-in-out infinite;
+}
+.scroll-cue:hover { color: var(--color-accent-hover); }
+.scroll-cue svg { width: 22px; height: 22px; }
+.scroll-cue.cue-hidden {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+@keyframes scrollCueBounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(7px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-cue { animation: none; }
+}
 
 /* ── About ── */
 .about-grid {
