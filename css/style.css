@@ -2682,19 +2682,25 @@ body.has-away-note .back-to-top { bottom: calc(2rem + var(--away-note-h, 0px) + 
   min-height: 3.35rem;
   -webkit-appearance: none;
   appearance: none;
-  /* Клик открывает календарь (см. script.js) — маска не для выделения */
-  -webkit-user-select: none;
-  user-select: none;
-  caret-color: transparent;
-  cursor: pointer;
 }
-/* Убираем синюю подсветку активного сегмента маски при клике */
+/* Активный сегмент маски: вместо системного синего «выделения» — мягкая
+   подсветка в цветах сайта, видно куда набираются цифры */
 .contact-form input[type="date"]::-webkit-datetime-edit-day-field:focus,
 .contact-form input[type="date"]::-webkit-datetime-edit-month-field:focus,
 .contact-form input[type="date"]::-webkit-datetime-edit-year-field:focus {
-  background: transparent;
-  color: inherit;
+  background: var(--color-accent-light);
+  color: var(--color-text);
+  border-radius: 4px;
+  outline: none;
 }
+.contact-form input[type="date"]::selection { background: var(--color-accent-light); }
+/* Иконка календаря — заметная и кликабельная */
+.contact-form input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: .55;
+  transition: opacity .2s;
+}
+.contact-form input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
 /* Пустое поле даты: браузер рисует маску (mm/dd/yyyy) цветом текста, а не
    плейсхолдера — приглушаем её до вида подсказки; .has-value ставит JS */
 .contact-form input[type="date"]:not(.has-value) {

@@ -1204,13 +1204,6 @@ document.addEventListener('DOMContentLoaded', function() {
       dateInput.addEventListener('input', syncDateLook);
       dateInput.addEventListener('change', syncDateLook);
       syncDateLook();
-      // Клик сразу открывает календарь (как на телефоне) вместо
-      // посегментного редактирования маски; Tab + клавиатура работают как раньше
-      dateInput.addEventListener('click', function() {
-        if (typeof dateInput.showPicker === 'function') {
-          try { dateInput.showPicker(); } catch (e) {}
-        }
-      });
     }
     var backendUrl = (typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'http://localhost:5000') + '/api/lead';
 
