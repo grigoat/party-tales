@@ -2683,3 +2683,15 @@ body.has-away-note .back-to-top { bottom: calc(2rem + var(--away-note-h, 0px) + 
   -webkit-appearance: none;
   appearance: none;
 }
+/* Пустое поле даты: браузер рисует маску (mm/dd/yyyy) цветом текста, а не
+   плейсхолдера — приглушаем её до вида подсказки; .has-value ставит JS */
+.contact-form input[type="date"]:not(.has-value) {
+  color: var(--color-text-muted);
+}
+.contact-form input[type="date"]:not(.has-value)::-webkit-datetime-edit {
+  color: var(--color-text-muted);
+}
+.contact-form input[type="date"].has-value,
+.contact-form input[type="date"].has-value::-webkit-datetime-edit {
+  color: var(--color-text);
+}

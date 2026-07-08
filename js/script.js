@@ -1191,9 +1191,17 @@ document.addEventListener('DOMContentLoaded', function() {
     var nameError = document.getElementById('nameError');
     var phoneError = document.getElementById('phoneError');
     var dateError = document.getElementById('dateError');
+    // Пустая маска браузера (mm/dd/yyyy) выглядит как текст — приглушаем её
+    // через CSS, класс отражает наличие выбранной даты (см. style.css)
+    function syncDateLook() {
+      if (dateInput) dateInput.classList.toggle('has-value', !!dateInput.value);
+    }
     if (dateInput) {
       // Заказы не бывают в прошлом — календарь начинается с сегодня
       dateInput.min = new Date().toISOString().slice(0, 10);
+      dateInput.addEventListener('input', syncDateLook);
+      dateInput.addEventListener('change', syncDateLook);
+      syncDateLook();
     }
     var backendUrl = (typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'http://localhost:5000') + '/api/lead';
 
@@ -1407,6 +1415,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       postLead(data, function() {
         contactForm.reset();
+        syncDateLook();
         if (typeSelect) typeSelect.selectedIndex = 0;
         var t = translations[currentLang];
         var msg = (t && t['toast.thanks']) || 'Спасибо! Мы свяжемся с вами по номеру {phone}';
