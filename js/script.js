@@ -1492,16 +1492,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ── Away notice: Natalia is in Moscow 04.07–12.08.2026, orders paused ──
   (function() {
-    var AWAY_KEY = 'ptAwayNote2026';
     // Self-destructs on 13 Aug 2026 — no cleanup deploy needed
     if (new Date() >= new Date(2026, 7, 13)) return;
-    try { if (localStorage.getItem(AWAY_KEY)) return; } catch (e) {}
 
     // i18n.js has already applied translations by now, so the note fills in
     // its own strings; the data-i18n attributes keep later language switches working.
     var t = (typeof translations !== 'undefined' &&
              translations[typeof currentLang !== 'undefined' ? currentLang : 'de']) || {};
     var onContacts = /contacts\.html/.test(window.location.pathname);
+
+    // The contact form gets its own small note — not dismissible, so a visitor
+    // who closed the floating card still learns about the pause before sending.
+    var form = document.getElementById('contactForm');
+    if (form) {
+      var formNote = document.createElement('p');
+      formNote.className = 'away-form-note';
+      formNote.setAttribute('data-i18n', 'away.form');
+      formNote.innerHTML = t['away.form'] || 'Обратите внимание: до 12 августа я в отъезде — заявку приму и отвечу, а праздник оформим уже с 13 августа.';
+      form.insertBefore(formNote, form.firstChild);
+    }
+
+    var AWAY_KEY = 'ptAwayNote2026';
+    // A closed note returns after a week: the pause lasts five weeks, and a
+    // visitor coming back mid-window shouldn't miss it. An old pre-timestamp
+    // value ('1') parses as a long-expired dismissal, so it shows again too.
+    var DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
+    try {
+      var dismissedAt = parseInt(localStorage.getItem(AWAY_KEY), 10);
+      if (dismissedAt && Date.now() - dismissedAt < DISMISS_MS) return;
+    } catch (e) {}
 
     var note = document.createElement('aside');
     note.className = 'away-note';
@@ -1512,7 +1531,7 @@ document.addEventListener('DOMContentLoaded', function() {
       '<div class="away-note-body">' +
         '<div class="away-note-label" data-i18n="away.label">' + (t['away.label'] || 'Записка от Наталии') + '</div>' +
         '<p class="away-note-text" data-i18n="away.text">' + (t['away.text'] || 'Друзья, я на время уезжаю в Москву — с 4 июля по 12 августа студия не сможет принимать и выполнять заказы. 13 августа я вернусь — праздники после этой даты можно бронировать уже сейчас!') + '</p>' +
-        '<a class="away-note-cta" href="' + (onContacts ? '#contactForm' : 'contacts.html') + '" data-i18n="away.cta">' + (t['away.cta'] || 'Забронировать дату после 12 августа &rarr;') + '</a>' +
+        '<a class="away-note-cta" href="' + (onContacts ? '#contactForm' : 'contacts.html#contactForm') + '" data-i18n="away.cta">' + (t['away.cta'] || 'Забронировать дату после 12 августа &rarr;') + '</a>' +
       '</div>' +
       '<button class="away-note-close" type="button" data-i18n-aria="away.close" aria-label="' + (t['away.close'] || 'Закрыть уведомление') + '">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>' +
@@ -1533,11 +1552,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     setTimeout(function() { note.classList.add('is-in'); }, 900);
 
-    note.querySelector('.away-note-close').addEventListener('click', function() {
-      try { localStorage.setItem(AWAY_KEY, '1'); } catch (e) {}
+    function dismiss() {
+      try { localStorage.setItem(AWAY_KEY, String(Date.now())); } catch (e) {}
+      document.removeEventListener('keydown', onEscKey);
       note.classList.remove('is-in');
       document.body.classList.remove('has-away-note');
       setTimeout(function() { note.remove(); }, 600);
-    });
+    }
+    function onEscKey(e) {
+      // Esc first serves whatever overlay is open (lightbox, review modal,
+      // chat `.is-open`, language dropdown) — only a bare page closes the note
+      if (e.key === 'Escape' && !document.querySelector('.open, .is-open')) dismiss();
+    }
+    note.querySelector('.away-note-close').addEventListener('click', dismiss);
+    document.addEventListener('keydown', onEscKey);
   })();
 });

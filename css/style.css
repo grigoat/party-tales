@@ -2500,3 +2500,13 @@ body.has-away-note .back-to-top { bottom: calc(2rem + var(--away-note-h, 0px) + 
 @media (prefers-reduced-motion: reduce) {
   .away-note { transition: opacity .2s ease; transform: none; }
 }
+/* Away-period note above the contact form fields (also 04.07–12.08.2026) */
+.away-form-note {
+  margin: 0 0 1.5rem;
+  padding: .85rem 1.1rem;
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  color: var(--color-text);
+  background: var(--color-accent-light);
+  border-radius: var(--radius-md);
+}

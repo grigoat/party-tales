@@ -273,6 +273,7 @@ var translations = {
     "away.text": "Liebe Freunde, ich verreise f&uuml;r eine Weile nach Moskau &mdash; vom 4.&nbsp;Juli bis zum 12.&nbsp;August kann das Studio keine Auftr&auml;ge annehmen oder ausf&uuml;hren. Ab dem 13.&nbsp;August bin ich wieder da &mdash; Feste nach diesem Datum k&ouml;nnen Sie schon jetzt reservieren!",
     "away.cta": "Termin nach dem 12. August reservieren&nbsp;&rarr;",
     "away.close": "Hinweis schliessen",
+    "away.form": "Bitte beachten Sie: bis zum 12.&nbsp;August bin ich verreist &mdash; Ihre Anfrage nehme ich gerne entgegen und melde mich, Ihr Fest gestalten wir ab dem 13.&nbsp;August.",
   },
 
   ru: {
@@ -549,6 +550,7 @@ var translations = {
     "away.text": "Друзья, я на время уезжаю в Москву — с 4&nbsp;июля по 12&nbsp;августа студия не сможет принимать и выполнять заказы. 13&nbsp;августа я вернусь — праздники после этой даты можно бронировать уже сейчас!",
     "away.cta": "Забронировать дату после 12 августа&nbsp;&rarr;",
     "away.close": "Закрыть уведомление",
+    "away.form": "Обратите внимание: до 12&nbsp;августа я в отъезде — заявку приму и отвечу, а праздник оформим уже с 13&nbsp;августа.",
   },
 
   en: {
@@ -825,6 +827,7 @@ var translations = {
     "away.text": "Dear friends, I&rsquo;m away in Moscow for a little while &mdash; from 4&nbsp;July to 12&nbsp;August the studio can&rsquo;t take on or fulfil orders. I&rsquo;ll be back on 13&nbsp;August &mdash; and celebrations after that date can be booked already now!",
     "away.cta": "Book a date after 12 August&nbsp;&rarr;",
     "away.close": "Close notice",
+    "away.form": "Please note: I&rsquo;m away until 12&nbsp;August &mdash; I&rsquo;ll gladly take your request and get back to you, and we&rsquo;ll style your celebration from 13&nbsp;August.",
   }
 };
 
