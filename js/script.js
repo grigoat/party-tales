@@ -1162,7 +1162,13 @@ document.addEventListener('DOMContentLoaded', function() {
   function showToast(msg, isError) {
     if (!toast) return;
     var textEl = toast.querySelector('.toast-text');
-    if (textEl) textEl.textContent = msg;
+    // Строки переводов содержат HTML-сущности (&auml; и т.п.) — раскрываем
+    // их через textarea, не подставляя msg в innerHTML напрямую
+    if (textEl) {
+      var decoder = document.createElement('textarea');
+      decoder.innerHTML = msg.replace(/</g, '&lt;');
+      textEl.textContent = decoder.value;
+    }
     toast.classList.remove('toast-error');
     if (isError) toast.classList.add('toast-error');
     toast.classList.add('show');
@@ -1193,28 +1199,179 @@ document.addEventListener('DOMContentLoaded', function() {
     var nameError = document.getElementById('nameError');
     var phoneError = document.getElementById('phoneError');
     var dateError = document.getElementById('dateError');
-    // Пустая маска браузера (mm/dd/yyyy) выглядит как текст — приглушаем её
-    // через CSS, класс отражает наличие выбранной даты (см. style.css)
-    function syncDateLook() {
-      if (dateInput) dateInput.classList.toggle('has-value', !!dateInput.value);
+    // ── Поле даты: маска ДД.ММ.ГГГГ + собственный календарь ──
+    // Нативный input[type=date] заменён: его посегментная маска с системным
+    // выделением неудобна и выглядит по-разному в браузерах и локалях
+    var dateToggle = document.getElementById('dateToggle');
+    var datePicker = document.getElementById('datePicker');
+    var pickerOpen = false;
+    var pickerMonth = null;
+
+    // Заказы не бывают в прошлом, а верхняя граница в два года
+    // отсекает опечатки в годе; всё в местном времени, не UTC
+    var dateNow = new Date();
+    var dateMin = new Date(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate());
+    var dateMax = new Date(dateMin.getFullYear() + 2, dateMin.getMonth(), dateMin.getDate());
+
+    function parseDMY(str) {
+      var m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(str);
+      if (!m) return null;
+      var d = new Date(+m[3], +m[2] - 1, +m[1]);
+      var real = d.getDate() === +m[1] && d.getMonth() === +m[2] - 1 && d.getFullYear() === +m[3];
+      return real ? d : null;
     }
-    // toISOString() даёт дату по UTC — около полуночи она отстаёт от местной
-    // на день, поэтому собираем YYYY-MM-DD из локальных компонентов
-    function localDateStr(offsetDays) {
-      var d = new Date();
-      if (offsetDays) d.setDate(d.getDate() + offsetDays);
-      var m = d.getMonth() + 1;
-      var day = d.getDate();
-      return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
+    function formatDMY(d) {
+      var dd = d.getDate(), mm = d.getMonth() + 1;
+      return (dd < 10 ? '0' : '') + dd + '.' + (mm < 10 ? '0' : '') + mm + '.' + d.getFullYear();
     }
+    function dateToISO(d) {
+      var dd = d.getDate(), mm = d.getMonth() + 1;
+      return d.getFullYear() + '-' + (mm < 10 ? '0' : '') + mm + '-' + (dd < 10 ? '0' : '') + dd;
+    }
+    function pickerLocale() {
+      var langMap = { de: 'de-CH', ru: 'ru-RU', en: 'en-GB' };
+      return langMap[typeof currentLang !== 'undefined' ? currentLang : 'de'] || 'de-CH';
+    }
+
+    function buildPicker() {
+      if (!datePicker || !pickerMonth) return;
+      var sel = parseDMY(dateInput.value);
+      var y = pickerMonth.getFullYear(), mo = pickerMonth.getMonth();
+      var title;
+      try {
+        title = pickerMonth.toLocaleDateString(pickerLocale(), { month: 'long', year: 'numeric' });
+      } catch (e) {
+        title = (mo + 1) + '.' + y;
+      }
+      var monthIdx = y * 12 + mo;
+      var prevOff = monthIdx <= dateMin.getFullYear() * 12 + dateMin.getMonth();
+      var nextOff = monthIdx >= dateMax.getFullYear() * 12 + dateMax.getMonth();
+      var arrow = function(dir) {
+        var points = dir < 0 ? '14 6 8 12 14 18' : '10 6 16 12 10 18';
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="' + points + '"/></svg>';
+      };
+      var html = '<div class="date-picker-head">' +
+        '<button type="button" class="date-picker-nav" data-dir="-1"' + (prevOff ? ' disabled' : '') + '>' + arrow(-1) + '</button>' +
+        '<span class="date-picker-title">' + title + '</span>' +
+        '<button type="button" class="date-picker-nav" data-dir="1"' + (nextOff ? ' disabled' : '') + '>' + arrow(1) + '</button>' +
+        '</div><div class="date-picker-grid">';
+      // Шапка дней недели, неделя начинается с понедельника
+      for (var w = 0; w < 7; w++) {
+        var wd;
+        try {
+          // 1 января 2024 — понедельник
+          wd = new Date(2024, 0, 1 + w).toLocaleDateString(pickerLocale(), { weekday: 'short' }).replace('.', '').slice(0, 2);
+        } catch (e) { wd = ''; }
+        html += '<span class="dp-wd">' + wd + '</span>';
+      }
+      var lead = (new Date(y, mo, 1).getDay() + 6) % 7;
+      for (var b = 0; b < lead; b++) html += '<span></span>';
+      var daysInMonth = new Date(y, mo + 1, 0).getDate();
+      for (var dayN = 1; dayN <= daysInMonth; dayN++) {
+        var d = new Date(y, mo, dayN);
+        var cls = 'dp-day';
+        if (d.getTime() === dateMin.getTime()) cls += ' is-today';
+        if (sel && d.getTime() === sel.getTime()) cls += ' is-selected';
+        var off = d < dateMin || d > dateMax;
+        html += '<button type="button" class="' + cls + '" data-date="' + formatDMY(d) + '"' + (off ? ' disabled' : '') + '>' + dayN + '</button>';
+      }
+      html += '</div>';
+      datePicker.innerHTML = html;
+    }
+
+    // На мобильных поле часто у нижнего края (над клавиатурой) — если
+    // календарю не хватает места снизу, показываем его над полем
+    function positionPicker() {
+      if (!pickerOpen) return;
+      datePicker.classList.remove('is-above');
+      var vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      var r = datePicker.getBoundingClientRect();
+      if (r.bottom > vh && dateInput.getBoundingClientRect().top > r.height) {
+        datePicker.classList.add('is-above');
+      }
+    }
+    if (window.visualViewport && datePicker) {
+      // Появление экранной клавиатуры меняет высоту вьюпорта уже после
+      // открытия — переоцениваем положение
+      window.visualViewport.addEventListener('resize', positionPicker);
+    }
+
+    function openPicker() {
+      if (pickerOpen || !datePicker) return;
+      var base = parseDMY(dateInput.value) || dateMin;
+      if (base < dateMin) base = dateMin;
+      if (base > dateMax) base = dateMax;
+      pickerMonth = new Date(base.getFullYear(), base.getMonth(), 1);
+      buildPicker();
+      datePicker.hidden = false;
+      pickerOpen = true;
+      positionPicker();
+      if (dateToggle) dateToggle.setAttribute('aria-expanded', 'true');
+    }
+    function closePicker() {
+      if (!pickerOpen) return;
+      pickerOpen = false;
+      datePicker.hidden = true;
+      if (dateToggle) dateToggle.setAttribute('aria-expanded', 'false');
+    }
+
     if (dateInput) {
-      // Заказы не бывают в прошлом — календарь начинается с сегодня,
-      // а верхняя граница в два года отсекает опечатки в годе
-      dateInput.min = localDateStr(0);
-      dateInput.max = localDateStr(730);
-      dateInput.addEventListener('input', syncDateLook);
-      dateInput.addEventListener('change', syncDateLook);
-      syncDateLook();
+      // Маска: пользователь набирает только цифры, точки ставятся сами
+      dateInput.addEventListener('input', function() {
+        var digits = dateInput.value.replace(/\D/g, '').slice(0, 8);
+        var out = digits.slice(0, 2);
+        if (digits.length > 2) out += '.' + digits.slice(2, 4);
+        if (digits.length > 4) out += '.' + digits.slice(4);
+        if (out !== dateInput.value) dateInput.value = out;
+        dateInput.classList.remove('error');
+        if (dateError) dateError.classList.remove('show');
+        if (pickerOpen) {
+          // Набранная дата сразу подсвечивается в открытом календаре
+          var typed = parseDMY(dateInput.value);
+          if (typed && typed >= dateMin && typed <= dateMax) {
+            pickerMonth = new Date(typed.getFullYear(), typed.getMonth(), 1);
+          }
+          buildPicker();
+        }
+      });
+      dateInput.addEventListener('focus', openPicker);
+      dateInput.addEventListener('click', openPicker);
+      dateInput.addEventListener('blur', function() {
+        closePicker();
+        validateDate();
+      });
+      dateInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' || e.key === 'Esc') closePicker();
+      });
+    }
+    if (dateToggle && dateInput) {
+      // preventDefault на mousedown: фокус не уходит из поля, blur не мигает
+      dateToggle.addEventListener('mousedown', function(e) { e.preventDefault(); });
+      dateToggle.addEventListener('click', function() {
+        if (pickerOpen) {
+          closePicker();
+        } else {
+          dateInput.focus();
+          openPicker();
+        }
+      });
+    }
+    if (datePicker && dateInput) {
+      datePicker.addEventListener('mousedown', function(e) { e.preventDefault(); });
+      datePicker.addEventListener('click', function(e) {
+        var dayBtn = e.target.closest('.dp-day');
+        if (dayBtn && !dayBtn.disabled) {
+          dateInput.value = dayBtn.getAttribute('data-date');
+          validateDate();
+          closePicker();
+          return;
+        }
+        var nav = e.target.closest('.date-picker-nav');
+        if (nav && !nav.disabled && pickerMonth) {
+          pickerMonth = new Date(pickerMonth.getFullYear(), pickerMonth.getMonth() + Number(nav.getAttribute('data-dir')), 1);
+          buildPicker();
+        }
+      });
     }
     var backendUrl = (typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'http://localhost:5000') + '/api/lead';
 
@@ -1264,14 +1421,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function validateDate() {
-      // Поле необязательное — ошибкой считается только дата в прошлом
+      // Поле необязательное — ошибка только для мусора и дат вне диапазона
       if (!dateInput || !dateInput.value) {
         if (dateInput) dateInput.classList.remove('error');
         if (dateError) dateError.classList.remove('show');
         return true;
       }
-      var valid = dateInput.value >= localDateStr(0) &&
-                  (!dateInput.max || dateInput.value <= dateInput.max);
+      var d = parseDMY(dateInput.value);
+      var valid = !!d && d >= dateMin && d <= dateMax;
       dateInput.classList.toggle('error', !valid);
       if (dateError) dateError.classList.toggle('show', !valid);
       return valid;
@@ -1317,16 +1474,6 @@ document.addEventListener('DOMContentLoaded', function() {
       phoneError.classList.remove('show');
       formatPhone();
     });
-
-    if (dateInput) {
-      dateInput.addEventListener('input', function() {
-        dateInput.classList.remove('error');
-        if (dateError) dateError.classList.remove('show');
-      });
-      // Не ждём отправки формы: набранная вручную невалидная дата
-      // подсвечивается сразу, как только пользователь ушёл с поля
-      dateInput.addEventListener('blur', validateDate);
-    }
 
     countrySelect.addEventListener('change', function() {
       phoneInput.value = '';
@@ -1421,7 +1568,11 @@ document.addEventListener('DOMContentLoaded', function() {
         phone: phoneInput.value.trim(),
         country: cfg.code,
         event_type: typeSelect.value || typeSelect.options[typeSelect.selectedIndex].text,
-        event_date: dateInput ? dateInput.value : '',
+        // Backend и Telegram ждут ISO (YYYY-MM-DD)
+        event_date: (function() {
+          var d = dateInput ? parseDMY(dateInput.value) : null;
+          return d ? dateToISO(d) : '';
+        })(),
         comment: commentInput.value.trim(),
         page_url: window.location.href,
         language: typeof currentLang !== 'undefined' ? currentLang : 'de'
@@ -1431,7 +1582,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
       postLead(data, function() {
         contactForm.reset();
-        syncDateLook();
         if (typeSelect) typeSelect.selectedIndex = 0;
         var t = translations[currentLang];
         var msg = (t && t['toast.thanks']) || 'Спасибо! Мы свяжемся с вами по номеру {phone}';

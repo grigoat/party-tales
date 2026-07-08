@@ -270,7 +270,9 @@ var translations = {
     "contacts.meta.desc": "Kontaktieren Sie PARTY TALES f&uuml;r Ballondekoration in Zug, Luzern, Z&uuml;rich. Kostenlose Lieferung ab 100 CHF.",
     "terms.meta.desc": "Allgemeine Gesch&auml;ftsbedingungen f&uuml;r PARTY TALES Ballondekoration in der Schweiz.",
     "contacts.form.date.label": "Datum des Anlasses (optional)",
-    "contacts.form.date.error": "Bitte w&auml;hlen Sie ein Datum in der Zukunft",
+    "contacts.form.date.placeholder": "TT.MM.JJJJ",
+    "contacts.form.date.open": "Kalender &ouml;ffnen",
+    "contacts.form.date.error": "Bitte geben Sie ein g&uuml;ltiges Datum ab heute an",
 
     "contacts.faq.label": "H&auml;ufige Fragen",
     "contacts.faq.title": "Gut zu <span class=\"hero-emphasis\">wissen.</span>",
@@ -585,7 +587,9 @@ var translations = {
     "contacts.meta.desc": "Свяжитесь с PARTY TALES для оформления шарами в Цуге, Люцерне, Цюрихе. Бесплатная доставка от 100 CHF.",
     "terms.meta.desc": "Условия и положения PARTY TALES — оформление праздников воздушными шарами в Швейцарии.",
     "contacts.form.date.label": "Дата события (необязательно)",
-    "contacts.form.date.error": "Пожалуйста, выберите дату в будущем",
+    "contacts.form.date.placeholder": "ДД.ММ.ГГГГ",
+    "contacts.form.date.open": "Открыть календарь",
+    "contacts.form.date.error": "Пожалуйста, укажите корректную дату не раньше сегодняшней",
 
     "contacts.faq.label": "Частые вопросы",
     "contacts.faq.title": "Полезно <span class=\"hero-emphasis\">знать.</span>",
@@ -900,7 +904,9 @@ var translations = {
     "contacts.meta.desc": "Contact PARTY TALES for premium balloon decoration in Zug, Lucerne, Zurich. Free delivery over 100 CHF.",
     "terms.meta.desc": "Terms and Conditions for PARTY TALES balloon decoration services in Switzerland.",
     "contacts.form.date.label": "Event date (optional)",
-    "contacts.form.date.error": "Please choose a date in the future",
+    "contacts.form.date.placeholder": "DD.MM.YYYY",
+    "contacts.form.date.open": "Open calendar",
+    "contacts.form.date.error": "Please enter a valid date from today onwards",
 
     "contacts.faq.label": "Common questions",
     "contacts.faq.title": "Good to <span class=\"hero-emphasis\">know.</span>",

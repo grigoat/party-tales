@@ -2677,39 +2677,128 @@ body.has-away-note .back-to-top { bottom: calc(2rem + var(--away-note-h, 0px) + 
 .lightbox.is-video .lightbox-video { display: block; }
 .lightbox.is-video .lightbox-content { display: none; }
 
-/* ── Date input matches other form fields on iOS ── */
-.contact-form input[type="date"] {
-  min-height: 3.35rem;
-  -webkit-appearance: none;
-  appearance: none;
+/* ── Поле даты: маска ДД.ММ.ГГГГ + собственный календарь ── */
+.date-field { position: relative; }
+.contact-form .date-field input {
+  width: 100%;
+  padding-right: 3.2rem;
 }
-/* Активный сегмент маски: вместо системного синего «выделения» — мягкая
-   подсветка в цветах сайта, видно куда набираются цифры */
-.contact-form input[type="date"]::-webkit-datetime-edit-day-field:focus,
-.contact-form input[type="date"]::-webkit-datetime-edit-month-field:focus,
-.contact-form input[type="date"]::-webkit-datetime-edit-year-field:focus {
-  background: var(--color-accent-light);
-  color: var(--color-text);
-  border-radius: 4px;
-  outline: none;
-}
-.contact-form input[type="date"]::selection { background: var(--color-accent-light); }
-/* Иконка календаря — заметная и кликабельная */
-.contact-form input[type="date"]::-webkit-calendar-picker-indicator {
+.date-toggle {
+  position: absolute;
+  top: 50%;
+  right: .55rem;
+  transform: translateY(-50%);
+  width: 2.3rem;
+  height: 2.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-text-muted);
   cursor: pointer;
-  opacity: .55;
-  transition: opacity .2s;
+  transition: color .2s, background .2s;
 }
-.contact-form input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
-/* Пустое поле даты: браузер рисует маску (mm/dd/yyyy) цветом текста, а не
-   плейсхолдера — приглушаем её до вида подсказки; .has-value ставит JS */
-.contact-form input[type="date"]:not(.has-value) {
-  color: var(--color-text-muted);
+.date-toggle:hover,
+.date-toggle[aria-expanded="true"] {
+  color: var(--color-accent);
+  background: var(--color-accent-light);
 }
-.contact-form input[type="date"]:not(.has-value)::-webkit-datetime-edit {
-  color: var(--color-text-muted);
+.date-toggle svg { width: 1.15rem; height: 1.15rem; }
+.date-picker {
+  position: absolute;
+  top: calc(100% + .5rem);
+  left: 0;
+  width: min(19.5rem, 100%);
+  background: var(--color-card);
+  border: 1.5px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  padding: .9rem;
+  z-index: 40;
+  animation: datePickerIn .18s ease;
 }
-.contact-form input[type="date"].has-value,
-.contact-form input[type="date"].has-value::-webkit-datetime-edit {
+@keyframes datePickerIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* Разворот вверх, когда снизу не хватает места (мобильная клавиатура) */
+.date-picker.is-above {
+  top: auto;
+  bottom: calc(100% + .5rem);
+  animation-name: datePickerInUp;
+}
+@keyframes datePickerInUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.date-picker-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  margin-bottom: .6rem;
+}
+.date-picker-title {
+  font-weight: 600;
+  font-size: .88rem;
   color: var(--color-text);
+  text-transform: capitalize;
+  text-align: center;
+  flex: 1;
 }
+.date-picker-nav {
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.date-picker-nav:hover:not(:disabled) {
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+}
+.date-picker-nav:disabled { opacity: .3; cursor: default; }
+.date-picker-nav svg { width: 1rem; height: 1rem; }
+.date-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  justify-items: center;
+}
+.dp-wd {
+  font-size: .6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--color-text-muted);
+  padding: .3rem 0 .4rem;
+}
+.dp-day {
+  width: 2.15rem;
+  height: 2.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: .82rem;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.dp-day:hover:not(:disabled) { background: var(--color-accent-light); }
+.dp-day:disabled { color: var(--color-text-muted); opacity: .4; cursor: default; }
+.dp-day.is-today { box-shadow: inset 0 0 0 1.5px var(--color-accent); }
+.dp-day.is-selected { background: var(--color-accent); color: #fff; }
+.dp-day.is-selected:hover:not(:disabled) { background: var(--color-accent-hover); }
