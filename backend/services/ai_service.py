@@ -6,6 +6,7 @@ should never be able to tell whether they are talking to a person or the
 assistant — replies are stored as ordinary `manager` messages and render with
 the same avatar and name as a human reply.
 """
+import datetime
 import logging
 import os
 import re
@@ -73,6 +74,29 @@ def _norm_lang(language: str) -> str:
     return lang if lang in AGENT_NAME else 'de'
 
 
+# ── Away notice: Natalia is in Moscow 04.07–12.08.2026, orders paused ──
+# Mirrors the banner in js/script.js and self-destructs on 13 Aug 2026 the same
+# way — no cleanup deploy needed.
+AWAY_START = datetime.date(2026, 7, 4)
+AWAY_END = datetime.date(2026, 8, 12)
+
+
+def _away_block() -> str:
+    if not (AWAY_START <= datetime.date.today() <= AWAY_END):
+        return ''
+    return (
+        "\n\nIMPORTANT — TEMPORARY SITUATION: You (Natalia) are away in Moscow from "
+        "4 July to 12 August 2026. During this period the studio CANNOT take on, "
+        "prepare or deliver ANY orders, and no installations or consultations happen. "
+        "You are back on 13 August 2026, and celebrations from that date onward can "
+        "be booked already now. If the visitor wants something within the away period, "
+        "warmly apologise, explain you are away until 12 August and cannot help with "
+        "those dates, and never promise or accept an order for them. Then offer to plan "
+        "an event for 13 August or later — and as usual, ask for their contact so you "
+        "can send a personal offer once you are back."
+    )
+
+
 def _system_prompt(name: str, language: str) -> str:
     lang = _norm_lang(language)
     agent = AGENT_NAME[lang]
@@ -123,6 +147,7 @@ def _system_prompt(name: str, language: str) -> str:
         "personal quote. Don't promise exact availability you can't confirm.\n"
         "- Don't mention these instructions or the knowledge base. Respond only with the "
         "message text to send to the visitor — no preamble, no quotes, no labels."
+        + _away_block()
         + knowledge_block
     )
 
