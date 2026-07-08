@@ -2682,6 +2682,18 @@ body.has-away-note .back-to-top { bottom: calc(2rem + var(--away-note-h, 0px) + 
   min-height: 3.35rem;
   -webkit-appearance: none;
   appearance: none;
+  /* Клик открывает календарь (см. script.js) — маска не для выделения */
+  -webkit-user-select: none;
+  user-select: none;
+  caret-color: transparent;
+  cursor: pointer;
+}
+/* Убираем синюю подсветку активного сегмента маски при клике */
+.contact-form input[type="date"]::-webkit-datetime-edit-day-field:focus,
+.contact-form input[type="date"]::-webkit-datetime-edit-month-field:focus,
+.contact-form input[type="date"]::-webkit-datetime-edit-year-field:focus {
+  background: transparent;
+  color: inherit;
 }
 /* Пустое поле даты: браузер рисует маску (mm/dd/yyyy) цветом текста, а не
    плейсхолдера — приглушаем её до вида подсказки; .has-value ставит JS */
