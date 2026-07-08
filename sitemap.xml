@@ -1,33 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://partytales.ch/</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://partytales.ch/?lang=de"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://partytales.ch/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://partytales.ch/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://partytales.ch/"/>
   </url>
   <url>
     <loc>https://partytales.ch/services.html</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://partytales.ch/services.html?lang=de"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://partytales.ch/services.html?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://partytales.ch/services.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://partytales.ch/services.html"/>
   </url>
   <url>
     <loc>https://partytales.ch/gallery.html</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://partytales.ch/gallery.html?lang=de"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://partytales.ch/gallery.html?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://partytales.ch/gallery.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://partytales.ch/gallery.html"/>
   </url>
   <url>
     <loc>https://partytales.ch/about.html</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://partytales.ch/about.html?lang=de"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://partytales.ch/about.html?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://partytales.ch/about.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://partytales.ch/about.html"/>
   </url>
   <url>
     <loc>https://partytales.ch/contacts.html</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://partytales.ch/contacts.html?lang=de"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://partytales.ch/contacts.html?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://partytales.ch/contacts.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://partytales.ch/contacts.html"/>
   </url>
   <url>
     <loc>https://partytales.ch/terms.html</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://partytales.ch/terms.html?lang=de"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://partytales.ch/terms.html?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://partytales.ch/terms.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://partytales.ch/terms.html"/>
   </url>
 </urlset>

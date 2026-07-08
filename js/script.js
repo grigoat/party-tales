@@ -58,8 +58,8 @@ document.addEventListener('DOMContentLoaded', function() {
       var img = item.querySelector('img');
       if (!img) return;
       lightboxImg.src = img.src;
-      lightboxImg.alt = img.alt || 'Фото';
-      lightboxCaption.textContent = img.alt || 'Фото';
+      lightboxImg.alt = img.alt || 'Foto';
+      lightboxCaption.textContent = img.alt || 'Foto';
     }
     lightbox.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -412,7 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       var img = document.createElement('img');
       img.src = 'images/gallery/' + file;
-      img.alt = 'Фото';
+      img.alt = 'Ballon Dekoration Ansicht';
       img.loading = 'lazy';
       img.setAttribute('data-i18n-aria', 'gallery.img.alt');
 

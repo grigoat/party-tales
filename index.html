@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="google" content="notranslate">
   <meta name="robots" content="notranslate">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <script>document.documentElement.classList.add("js");</script>
-  <meta name="description" content="PARTY TALES — Swiss boutique balloon decoration studio. Premium helium balloons, photo backdrops, personalised decor in Zug, Lucerne, Zurich. Same-day delivery." data-i18n-meta="index.meta.desc">
-  <meta property="og:title" content="PARTY TALES | Premium Balloon Decoration Switzerland" data-i18n-meta="index.page.title.full">
-  <meta property="og:description" content="Swiss boutique studio for unforgettable balloon decorations. Birthdays, weddings, corporate events — we create the wonder." data-i18n-meta="index.meta.desc">
+  <meta name="description" content="PARTY TALES — Schweizer Boutique-Studio für Ballon-Dekoration. Heliumballons, Fotowände, SurpriseBox. Lieferung in Zug, Luzern, Zürich, Schwyz. Jetzt buchen!" data-i18n-meta="index.meta.desc">
+  <meta property="og:title" content="PARTY TALES | Ballon-Dekoration Schweiz — Zug, Luzern, Zürich" data-i18n-meta="index.page.title.full">
+  <meta property="og:description" content="Schweizer Boutique-Studio für unvergessliche Ballon-Dekoration. Geburtstage, Hochzeiten, Firmenevents — wir erschaffen das Wunder." data-i18n-meta="index.meta.desc">
   <meta property="og:image" content="https://partytales.ch/images/og-image.jpg">
   <meta property="og:url" content="https://partytales.ch/">
   <meta name="twitter:card" content="summary_large_image">
@@ -19,7 +19,7 @@
   <link rel="alternate" hreflang="en" href="https://partytales.ch/?lang=en">
   <link rel="alternate" hreflang="x-default" href="https://partytales.ch/">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com; media-src 'self'; connect-src 'self' https:">
-  <title data-i18n-title="index.page.title.full">PARTY TALES | Premium Balloon Decoration Switzerland</title>
+  <title data-i18n-title="index.page.title.full">PARTY TALES | Ballon-Dekoration Schweiz — Zug, Luzern, Zürich</title>
   <link rel="icon" type="image/png" href="images/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,19 +43,33 @@
     "url": "https://partytales.ch/",
     "telephone": "+41 78 314 3032",
     "email": "info@partytales.ch",
+    "priceRange": "CHF 50 - 500",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Zug",
+      "addressRegion": "ZG",
       "addressCountry": "CH"
     },
-    "areaServed": ["Zug", "Lucerne", "Zurich", "Schwyz"],
+    "areaServed": [
+      { "@type": "City", "name": "Zug" },
+      { "@type": "City", "name": "Lucerne" },
+      { "@type": "City", "name": "Zurich" },
+      { "@type": "City", "name": "Schwyz" }
+    ],
+    "openingHoursSpecification": [
+      { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"], "opens": "10:00", "closes": "21:00" }
+    ],
+    "sameAs": [
+      "https://www.instagram.com/partytales.ch/",
+      "https://www.facebook.com/profile.php?id=61554218107551"
+    ],
     "image": "https://partytales.ch/images/og-image.jpg"
   }
   </script>
 </head>
 <body>
 
-<a href="#main-content" class="skip-link" data-i18n="skip.content">Skip to content</a>
+<a href="#main-content" class="skip-link" data-i18n="skip.content">Zum Inhalt springen</a>
 
 <div id="preloader" aria-hidden="true">
   <div class="loader-logo"><img src="images/logo.webp" alt="PARTY TALES" data-i18n-aria="preloader.alt"></div>
@@ -63,15 +77,15 @@
 
 <nav id="navbar" class="nav-hero">
   <a href="index.html" class="logo"><img src="images/logo.webp" alt="PARTY TALES"></a>
-  <button class="nav-toggle" id="navToggle" aria-label="Меню" data-i18n-aria="navToggle.aria">
+  <button class="nav-toggle" id="navToggle" aria-label="Menü" data-i18n-aria="navToggle.aria">
     <span></span><span></span><span></span>
   </button>
   <ul class="nav-links" id="navLinks">
-    <li><a href="index.html" class="active" aria-current="page" data-i18n="nav.home">Главная</a></li>
-    <li><a href="about.html" data-i18n="nav.about">О нас</a></li>
-    <li><a href="services.html" data-i18n="nav.services">Услуги</a></li>
-    <li><a href="gallery.html" data-i18n="nav.gallery">Галерея</a></li>
-    <li><a href="contacts.html" class="btn btn-primary nav-contact-btn" data-i18n="nav.contact">Связаться</a></li>
+    <li><a href="index.html" class="active" aria-current="page" data-i18n="nav.home">Startseite</a></li>
+    <li><a href="about.html" data-i18n="nav.about">Über uns</a></li>
+    <li><a href="services.html" data-i18n="nav.services">Leistungen</a></li>
+    <li><a href="gallery.html" data-i18n="nav.gallery">Galerie</a></li>
+    <li><a href="contacts.html" class="btn btn-primary nav-contact-btn" data-i18n="nav.contact">Kontakt</a></li>
     <li class="lang-item">
       <select class="lang-select" id="langSelect">
         <option value="de">DE</option>
@@ -259,7 +273,7 @@
     <p class="section-desc mx-auto reveal" data-i18n="index.gallery.desc" style="margin-bottom:2.5rem">Every project tells a different story. Here are a few of our favourites — from intimate family celebrations to large-scale corporate events.</p>
     <div class="gallery-grid">
       <div class="gallery-item reveal gallery-item-featured" style="--i:0">
-        <img src="images/gallery/IMG_0312.webp" alt="Фотозона" loading="lazy" width="800" height="600" data-i18n-aria="index.gallery.label1">
+        <img src="images/gallery/IMG_0312.webp" alt="Fotowand" loading="lazy" width="800" height="600" data-i18n-aria="index.gallery.label1">
         <div class="gallery-item-overlay">
           <span class="gallery-item-label" data-i18n="index.gallery.label1">Photo backdrop</span>
           <span class="gallery-item-arrow">
@@ -270,7 +284,7 @@
         </div>
       </div>
       <div class="gallery-item reveal" style="--i:1">
-        <img src="images/gallery/IMG_1255.webp" alt="Декор шарами" loading="lazy" width="800" height="600" data-i18n-aria="index.gallery.label2">
+        <img src="images/gallery/IMG_1255.webp" alt="Ballondekoration" loading="lazy" width="800" height="600" data-i18n-aria="index.gallery.label2">
         <div class="gallery-item-overlay">
           <span class="gallery-item-label" data-i18n="index.gallery.label2">Balloon decor</span>
           <span class="gallery-item-arrow">
@@ -281,7 +295,7 @@
         </div>
       </div>
       <div class="gallery-item reveal" style="--i:2">
-        <img src="images/gallery/IMG_4208.webp" alt="Композиция" loading="lazy" width="800" height="600" data-i18n-aria="index.gallery.label3">
+        <img src="images/gallery/IMG_4208.webp" alt="Komposition" loading="lazy" width="800" height="600" data-i18n-aria="index.gallery.label3">
         <div class="gallery-item-overlay">
           <span class="gallery-item-label" data-i18n="index.gallery.label3">Composition</span>
           <span class="gallery-item-arrow">
@@ -292,7 +306,7 @@
         </div>
       </div>
       <div class="gallery-item reveal" style="--i:3">
-        <img src="images/gallery/IMG_7201.webp" alt="Оформление" loading="lazy" width="800" height="600" data-i18n-aria="index.gallery.label4">
+        <img src="images/gallery/IMG_7201.webp" alt="Gestaltung" loading="lazy" width="800" height="600" data-i18n-aria="index.gallery.label4">
         <div class="gallery-item-overlay">
           <span class="gallery-item-label" data-i18n="index.gallery.label4">Design</span>
           <span class="gallery-item-arrow">
@@ -401,11 +415,11 @@
       </svg>
     </a>
   </div>
-  <p data-i18n="footer.copyright">&copy; 2026 PARTY TALES &mdash; оформление праздников воздушными шарами. Zug, Schweiz.</p>
-  <p class="footer-terms"><a href="terms.html" class="footer-terms-link" data-i18n="footer.terms">Terms and Conditions</a></p>
+  <p data-i18n="footer.copyright">&copy; 2026 PARTY TALES &mdash; Ballon-Dekoration für Feste. Zug, Schweiz.</p>
+  <p class="footer-terms"><a href="terms.html" class="footer-terms-link" data-i18n="footer.terms">Allgemeine Geschäftsbedingungen</a></p>
 </footer>
 
-<button class="back-to-top" id="backToTop" aria-label="Наверх" data-i18n-aria="backToTop.aria">
+<button class="back-to-top" id="backToTop" aria-label="Nach oben" data-i18n-aria="backToTop.aria">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
     <path d="M18 15L12 9L6 15" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
@@ -418,7 +432,7 @@
       <path d="M16 10l-4.5 4.5L8 11" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   </span>
-  <span class="toast-text" data-i18n="toast.default">Спасибо! Мы свяжемся с вами в ближайшее время.</span>
+  <span class="toast-text" data-i18n="toast.default">Danke! Wir melden uns in Kürze bei Ihnen.</span>
 </div>
 
 </body>
