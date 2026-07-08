@@ -39,6 +39,7 @@ def init_db():
         # --- Migrations: add columns that older databases may not have ---
         _ensure_column(conn, 'leads', 'reply', "TEXT DEFAULT ''")
         _ensure_column(conn, 'leads', 'reply_at', "TEXT DEFAULT ''")
+        _ensure_column(conn, 'leads', 'event_date', "TEXT DEFAULT ''")
 
         # --- Live chat ---
         conn.execute('''
@@ -100,13 +101,13 @@ def _ensure_column(conn, table, column, decl):
         conn.execute(f'ALTER TABLE {table} ADD COLUMN {column} {decl}')
 
 
-def add_lead(name, phone, country, event_type, comment, page_url='', language=''):
+def add_lead(name, phone, country, event_type, comment, page_url='', language='', event_date=''):
     created_at = datetime.utcnow().isoformat()
     with get_db() as conn:
         cur = conn.execute(
-            'INSERT INTO leads (name, phone, country, event_type, comment, page_url, language, created_at) '
-            'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            (name, phone, country, event_type, comment, page_url, language, created_at)
+            'INSERT INTO leads (name, phone, country, event_type, event_date, comment, page_url, language, created_at) '
+            'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            (name, phone, country, event_type, event_date, comment, page_url, language, created_at)
         )
         return cur.lastrowid
 

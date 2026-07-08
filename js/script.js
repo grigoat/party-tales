@@ -29,15 +29,38 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
+  var lightboxVideo = document.getElementById('lightboxVideo');
+
+  function stopLightboxVideo() {
+    if (lightboxVideo && !lightboxVideo.paused) lightboxVideo.pause();
+  }
+
   function openLightbox(index) {
-    var items = document.querySelectorAll('.gallery-item img');
-    if (!items[index]) return;
+    // Единый список медиа: фото и видео — каждый .gallery-item несёт ровно
+    // одно из двух, индексы совпадают с порядком в DOM.
+    var items = document.querySelectorAll('.gallery-item');
+    var item = items[index];
+    if (!item) return;
     if (!lightbox.classList.contains('open')) {
       lightboxLastFocus = document.activeElement;
     }
-    lightboxImg.src = items[index].src;
-    lightboxImg.alt = items[index].alt || 'Фото';
-    lightboxCaption.textContent = items[index].alt || 'Фото';
+    var videoSrc = item.getAttribute('data-video');
+    if (videoSrc && lightboxVideo) {
+      lightbox.classList.add('is-video');
+      if (lightboxVideo.getAttribute('src') !== videoSrc) {
+        lightboxVideo.setAttribute('src', videoSrc);
+      }
+      lightboxVideo.play().catch(function() {});
+      lightboxCaption.textContent = '';
+    } else {
+      stopLightboxVideo();
+      lightbox.classList.remove('is-video');
+      var img = item.querySelector('img');
+      if (!img) return;
+      lightboxImg.src = img.src;
+      lightboxImg.alt = img.alt || 'Фото';
+      lightboxCaption.textContent = img.alt || 'Фото';
+    }
     lightbox.classList.add('open');
     document.body.style.overflow = 'hidden';
     var closeBtn = lightbox.querySelector('.lightbox-close');
@@ -45,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function closeLightbox() {
+    stopLightboxVideo();
     lightbox.classList.remove('open');
     document.body.style.overflow = '';
     if (lightboxLastFocus && typeof lightboxLastFocus.focus === 'function') {
@@ -54,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function changeImage(dir) {
-    var items = document.querySelectorAll('.gallery-item img');
+    var items = document.querySelectorAll('.gallery-item');
     if (!items.length) return;
     currentIndex = (currentIndex + dir + items.length) % items.length;
     openLightbox(currentIndex);
@@ -105,259 +129,278 @@ document.addEventListener('DOMContentLoaded', function() {
   var galleryGrid = document.getElementById('galleryGrid');
   var galleryFilters = document.getElementById('galleryFilters');
   var galleryCat = {
-  '1E2BE317-DA39-4AF2-9A53-1F473331049B.JPG': 'birthday',
-  'C371B279-0A54-408A-887C-77001683EFEF.JPG': 'wedding',
-  'CD11B737-A774-4BF8-B0BD-EB017CB846B6.JPG': 'corporate',
-  'CCB0EAAB-ED03-4DB0-8F00-5DF015C4227A.JPG': 'babyshower',
-  '8DC9E238-B8C1-45CC-A7E3-7BBB0B9B421E.JPG': 'birthday',
-  '2B52658A-34D4-4417-A05D-F83E408AB928.JPG': 'wedding',
-  '7D6B9EF6-0430-4858-AD99-F813E4EFAFEB.JPG': 'corporate',
-  '6FEB105B-AE50-4157-806E-B960E9027B4B.JPG': 'babyshower',
-  'D636A909-CC68-47D1-8738-F9C546E9331A.JPG': 'birthday',
-  'A48F492F-05CF-41C9-857F-A4F6E4CF2900.JPG': 'wedding',
-  '87ABDD10-B02F-4A47-8A7D-143C88016055.JPG': 'corporate',
-  '34CBEE1B-8ED4-42F2-A0E9-E3FFAF9B80DA.JPG': 'babyshower',
-  '40AC94F3-CAD7-426E-BA70-4D1D0B722816.JPG': 'birthday',
-  'AFF24DCE-0F03-4787-A994-8B2909493E46.JPG': 'wedding',
-  '432B792D-F136-40C8-8BEB-1EBD7789CD54.JPG': 'corporate',
-  '816E6CD6-116E-45EF-ACBC-549943122F11.JPG': 'babyshower',
-  '943A21B1-75DF-43C1-88F2-DDC317DD98A4.JPG': 'birthday',
-  'IMG_1255.jpg': 'wedding',
-  'BAE95F70-8C93-4258-878B-C8F1072EE61A.JPG': 'corporate',
-  '7FA6641E-D8BC-4EED-A4DB-5ED5B55386EE.JPG': 'babyshower',
-  '7A45C820-B917-499E-B508-0C30F75B5BDA.JPG': 'birthday',
-  '0E76160B-8854-42E9-8C8C-C932ED7D3C13.JPG': 'wedding',
-  '870D9268-FDAD-4A6A-81DB-657438266334.JPG': 'corporate',
-  '9C72CDCE-7539-4146-8CF4-78E1D57C8BB7.JPG': 'babyshower',
-  '4ABFCC78-00B7-41CB-9252-FF730B000661.JPG': 'birthday',
-  'C6C0A571-CFCB-4AAF-9BC7-7CD64BE93D85.JPG': 'wedding',
-  '1D000A45-A36B-4782-B98B-05DE6AFB8DE3.JPG': 'corporate',
-  '0744315C-D24A-4CD5-A0E8-C6AB50BDE2DF.JPG': 'babyshower',
-  'B3C6BD75-EE64-43B5-B47B-573CA52F2DC5.JPG': 'birthday',
-  '73758C5E-6743-4ADB-ABC0-314E4A79272B.JPG': 'wedding',
-  '39C517C5-6E19-43AA-8E4D-E81EDE40F6C8.JPG': 'corporate',
-  'B653CCC5-03EB-4C3A-87F9-A67C078B5305.JPG': 'babyshower',
-  '9583779D-08C4-439A-9895-2E4E7C3F4118.JPG': 'birthday',
-  'D7995E94-06DA-45F9-A185-7EAD31B79211.JPG': 'wedding',
-  'BAB84F60-816B-46D0-A686-C20F111D2EAD.JPG': 'corporate',
-  'F3895621-0E25-4DA6-971E-6A272D76543B.JPG': 'babyshower',
-  '5371F14B-4BDA-4B35-9D2C-F982F2BAEAD8.JPG': 'birthday',
-  'CD81C696-3876-433E-8079-5D06ED8D79B2.JPG': 'wedding',
-  '470600E3-4507-4559-95A7-33D06D4F678B.JPG': 'corporate',
-  '72C46CE7-649C-4CEB-8B3D-CEFA354FEF2F.JPG': 'babyshower',
-  '5128310E-B59A-4B19-BEB9-3244302D5484.JPG': 'birthday',
-  'E2C2E93C-4D46-47DA-98C9-DFA993BF509A.JPG': 'wedding',
-  '62BF8D5F-8ED9-43F7-8129-024B8521CE21.JPG': 'corporate',
-  'A9F4A531-555F-4F3C-B7FD-A138D7A3E68A.JPG': 'babyshower',
-  '9AC9DEEB-DEB5-4657-8600-870814BD5532.JPG': 'birthday',
-  '7AFD9CF5-A4EA-4AC4-A217-1AC33D5DC177.JPG': 'wedding',
-  '6585A8CF-33E7-4921-BE9D-0DFBF36226AB.JPG': 'corporate',
-  'IMG_R_0034.JPG': 'babyshower',
-  '3797D487-9F8A-4AFD-BD6B-C7B4CC7489B9.JPG': 'birthday',
-  '731DF57B-C138-49B3-8BAD-0132EEA9AB9B.JPG': 'wedding',
-  'C0B278E7-363B-44C8-956B-7AFA8D83C92E.JPG': 'corporate',
-  '37E8A320-6067-4E0C-AFF3-595C9450B5E0.JPG': 'babyshower',
-  '57B7DF0F-2E0E-4CCE-B98B-23BA73EDBCBA.JPG': 'birthday',
-  '8424640A-0452-49B0-8FDF-0C0DF825D766.JPG': 'wedding',
-  'image.JPG': 'corporate',
-  '87111272-3F8D-4E5C-B2C3-66C3C9529206.JPG': 'babyshower',
-  '16BAD5C4-CE91-4D71-A394-E6C71FB17CD6.JPG': 'birthday',
-  '78FEB6E2-9B9E-492D-9AEF-184E808A633D.JPG': 'wedding',
-  'IMG_7225.jpg': 'corporate',
-  'B4A38432-2F7E-4DF6-AC0F-5E7D8EE4E209.JPG': 'babyshower',
-  'D7B796D5-00BA-42FF-B7A5-FD1C754F8E2B.JPG': 'birthday',
-  '2FFB3D60-CBD3-4BD8-A61B-E8768BE4FED2.JPG': 'wedding',
-  '70B3D870-844F-41C9-A46D-CF9E30828E13.JPG': 'corporate',
-  'D93468E2-1A8E-4907-B931-0C3B923B2F4C.JPG': 'babyshower',
-  '95C17BB3-C25A-48C9-8308-520407A81C8E.JPG': 'birthday',
-  '1E27F947-3ACE-4AED-95F1-0F79F644C986.JPG': 'wedding',
-  '3821E836-1B0D-4E1F-9D6D-063025C4A66A.JPG': 'corporate',
-  '68C9400B-36B8-43DF-91A3-E641E7B0F204.JPG': 'babyshower',
-  '4DFA88B4-C603-4602-AD60-60E44F8973F1.JPG': 'birthday',
-  '1E3726E7-10B3-4F9C-9257-937441014F1A.JPG': 'wedding',
-  'A1E09A60-71C6-41E3-A140-185DB389ECAB.JPG': 'corporate',
-  '29FA9E86-1BCF-4735-BF99-2AA5FFF63101.JPG': 'babyshower',
-  '89FCB87D-D0E9-4531-A725-0AE88F4D2B57.JPG': 'birthday',
-  '7AF28D08-2EA4-4C12-9197-EC1882526869.JPG': 'wedding',
-  '10683988-A7C2-4015-8159-FF938A2B340D.JPG': 'corporate',
-  '44E7BF22-6F3B-4A30-BA4B-FD6E3C157391.JPG': 'babyshower',
-  '66E98D96-3E08-4E61-8BA2-1D0DA3902FA2.JPG': 'birthday',
-  '6789E071-B745-451E-A49F-99DDE287E6AB.JPG': 'wedding',
-  '21465F3E-B8DF-4ACA-A46F-EF060191EE85.JPG': 'corporate',
-  '705A64C3-5D03-47EE-A85D-0C0FFEB8A57B.JPG': 'babyshower',
-  'DBD3F050-36EE-4238-953F-3D503D05ABB0.JPG': 'birthday',
-  'F909B614-1094-45E2-BD5E-5B2205C28EBC.JPG': 'wedding',
-  'F8E883ED-8304-4847-9F56-2C8AA7F38F78.jpg': 'corporate',
-  'D9EEE7A0-3F9D-41A5-AB81-672435C00B2D.JPG': 'babyshower',
-  '30A56E4A-C85C-45FA-87DD-B559A675CD9E.JPG': 'birthday',
-  'BA38C595-CE4F-413D-8932-31DA5374A8DD.JPG': 'wedding',
-  '66152DB4-1C74-44A0-87D7-0CC4A5BC44F8.JPG': 'corporate',
-  'EA2EC6C3-7460-43E4-AB12-F09A7A6A4387.JPG': 'babyshower',
-  '33C3260E-B226-4CBF-9FB0-89D8FF178DD2.JPG': 'birthday',
-  '0523BDD4-D1CF-4375-8A27-1834ED5CAF10.JPG': 'wedding',
-  'IMG_4208.jpg': 'corporate',
-  'EFA518AA-681F-483B-A183-DE89DAF6C0F6.JPG': 'babyshower',
-  '7A592DEC-ADCB-4D9E-92CF-418A17C63396.JPG': 'birthday',
-  'IMG_0312.jpg': 'wedding',
-  '747EFCA5-6C42-48E5-9FBE-13A7CEA9B9F6.JPG': 'corporate',
-  'F30CD089-7B50-4246-9365-C4E786A420DE.JPG': 'babyshower',
-  'B68A2450-01A9-4BE2-84A4-94FAB323571F.JPG': 'birthday',
-  'ADB9946F-4C64-4E07-9412-BB7D6F5DF771.JPG': 'wedding',
-  'BA7016B8-221D-4EE4-A591-D195F5D27371.JPG': 'corporate',
-  '399CCB98-0581-49EB-A7DD-A7FE165723B1.JPG': 'babyshower',
-  '9080B576-6EDF-45E9-833B-AE65672CE867.JPG': 'birthday',
-  'DC905D7D-0149-401D-88DA-99CC86DF9C02.JPG': 'wedding',
-  '9AEC9186-6A3D-42C7-B9E9-BD9A4FC474A2.JPG': 'corporate',
-  '8502B469-B1E0-4812-8EA2-1048C6B90876.JPG': 'babyshower',
-  '3DDE2D6F-5FA3-43C8-91D0-27C34C5CDA67.JPG': 'birthday',
-  '3A39B971-451C-4384-9353-C0F2F0AC7C7B.JPG': 'wedding',
-  'F22A27C0-1D33-457A-8E37-F50C8212BA99.JPG': 'corporate',
-  'IMG_7215.jpg': 'babyshower',
-  '0EEFBED7-9C4C-42AD-9929-FBDDA1B4E922.JPG': 'birthday',
-  '777D44CF-EA4C-4150-85C1-71B348DB9047.JPG': 'wedding',
-  '96DC5D75-13BE-41C2-AFE0-7154F55A189D.JPG': 'corporate',
-  '208F1AD7-58E0-49C3-B35F-AF49FC3F0CDE.JPG': 'babyshower',
-  '8AD140B4-3256-4A54-BA15-81B4DC048BAF.JPG': 'birthday',
-  'FBB21DED-0E2C-4C5A-8558-4FFD599010D2.JPG': 'wedding',
-  'B4050052-25B0-4C39-9F7A-0363BE33FF80.JPG': 'corporate',
-  '24863E95-84B8-40DA-A0A6-3CB066178DD8.JPG': 'babyshower',
-  'IMG_7201.jpg': 'birthday',
-  '2B6D9516-8D01-4752-9111-9462F5E79D5D.JPG': 'wedding',
-  '3D4F81B9-B847-4A72-BE04-AD67736F24F6.JPG': 'corporate',
-  '415713E8-4066-408C-8EC5-8E84C971979F.JPG': 'babyshower',
-  '49078041-1180-4016-A797-9E0214568883.JPG': 'birthday',
-  'BED69D2C-0886-40BA-9922-6C0B8BB0BB2A.JPG': 'wedding',
-  '0EBCCFE4-A374-4A86-A12B-D27AB0D7AB25.JPG': 'corporate',
-  '282E51EC-F8E9-4A37-BCF6-3132C52C6751.JPG': 'babyshower',
-  'A615A628-87E2-4DB3-8695-D671143AAB5B.JPG': 'birthday'
+  '1E2BE317-DA39-4AF2-9A53-1F473331049B.webp': 'birthday',
+  'C371B279-0A54-408A-887C-77001683EFEF.webp': 'wedding',
+  'CD11B737-A774-4BF8-B0BD-EB017CB846B6.webp': 'corporate',
+  'CCB0EAAB-ED03-4DB0-8F00-5DF015C4227A.webp': 'babyshower',
+  '8DC9E238-B8C1-45CC-A7E3-7BBB0B9B421E.webp': 'birthday',
+  '2B52658A-34D4-4417-A05D-F83E408AB928.webp': 'wedding',
+  '7D6B9EF6-0430-4858-AD99-F813E4EFAFEB.webp': 'corporate',
+  '6FEB105B-AE50-4157-806E-B960E9027B4B.webp': 'babyshower',
+  'D636A909-CC68-47D1-8738-F9C546E9331A.webp': 'birthday',
+  'A48F492F-05CF-41C9-857F-A4F6E4CF2900.webp': 'wedding',
+  '87ABDD10-B02F-4A47-8A7D-143C88016055.webp': 'corporate',
+  '34CBEE1B-8ED4-42F2-A0E9-E3FFAF9B80DA.webp': 'babyshower',
+  '40AC94F3-CAD7-426E-BA70-4D1D0B722816.webp': 'birthday',
+  'AFF24DCE-0F03-4787-A994-8B2909493E46.webp': 'wedding',
+  '432B792D-F136-40C8-8BEB-1EBD7789CD54.webp': 'corporate',
+  '816E6CD6-116E-45EF-ACBC-549943122F11.webp': 'babyshower',
+  '943A21B1-75DF-43C1-88F2-DDC317DD98A4.webp': 'birthday',
+  'IMG_1255.webp': 'wedding',
+  'BAE95F70-8C93-4258-878B-C8F1072EE61A.webp': 'corporate',
+  '7FA6641E-D8BC-4EED-A4DB-5ED5B55386EE.webp': 'babyshower',
+  '7A45C820-B917-499E-B508-0C30F75B5BDA.webp': 'birthday',
+  '0E76160B-8854-42E9-8C8C-C932ED7D3C13.webp': 'wedding',
+  '870D9268-FDAD-4A6A-81DB-657438266334.webp': 'corporate',
+  '9C72CDCE-7539-4146-8CF4-78E1D57C8BB7.webp': 'babyshower',
+  '4ABFCC78-00B7-41CB-9252-FF730B000661.webp': 'birthday',
+  'C6C0A571-CFCB-4AAF-9BC7-7CD64BE93D85.webp': 'wedding',
+  '1D000A45-A36B-4782-B98B-05DE6AFB8DE3.webp': 'corporate',
+  '0744315C-D24A-4CD5-A0E8-C6AB50BDE2DF.webp': 'babyshower',
+  'B3C6BD75-EE64-43B5-B47B-573CA52F2DC5.webp': 'birthday',
+  '73758C5E-6743-4ADB-ABC0-314E4A79272B.webp': 'wedding',
+  '39C517C5-6E19-43AA-8E4D-E81EDE40F6C8.webp': 'corporate',
+  'B653CCC5-03EB-4C3A-87F9-A67C078B5305.webp': 'babyshower',
+  '9583779D-08C4-439A-9895-2E4E7C3F4118.webp': 'birthday',
+  'D7995E94-06DA-45F9-A185-7EAD31B79211.webp': 'wedding',
+  'BAB84F60-816B-46D0-A686-C20F111D2EAD.webp': 'corporate',
+  'F3895621-0E25-4DA6-971E-6A272D76543B.webp': 'babyshower',
+  '5371F14B-4BDA-4B35-9D2C-F982F2BAEAD8.webp': 'birthday',
+  'CD81C696-3876-433E-8079-5D06ED8D79B2.webp': 'wedding',
+  '470600E3-4507-4559-95A7-33D06D4F678B.webp': 'corporate',
+  '72C46CE7-649C-4CEB-8B3D-CEFA354FEF2F.webp': 'babyshower',
+  '5128310E-B59A-4B19-BEB9-3244302D5484.webp': 'birthday',
+  'E2C2E93C-4D46-47DA-98C9-DFA993BF509A.webp': 'wedding',
+  '62BF8D5F-8ED9-43F7-8129-024B8521CE21.webp': 'corporate',
+  'A9F4A531-555F-4F3C-B7FD-A138D7A3E68A.webp': 'babyshower',
+  '9AC9DEEB-DEB5-4657-8600-870814BD5532.webp': 'birthday',
+  '7AFD9CF5-A4EA-4AC4-A217-1AC33D5DC177.webp': 'wedding',
+  '6585A8CF-33E7-4921-BE9D-0DFBF36226AB.webp': 'corporate',
+  'IMG_R_0034.webp': 'babyshower',
+  '3797D487-9F8A-4AFD-BD6B-C7B4CC7489B9.webp': 'birthday',
+  '731DF57B-C138-49B3-8BAD-0132EEA9AB9B.webp': 'wedding',
+  'C0B278E7-363B-44C8-956B-7AFA8D83C92E.webp': 'corporate',
+  '37E8A320-6067-4E0C-AFF3-595C9450B5E0.webp': 'babyshower',
+  '57B7DF0F-2E0E-4CCE-B98B-23BA73EDBCBA.webp': 'birthday',
+  '8424640A-0452-49B0-8FDF-0C0DF825D766.webp': 'wedding',
+  'image.webp': 'corporate',
+  '87111272-3F8D-4E5C-B2C3-66C3C9529206.webp': 'babyshower',
+  '16BAD5C4-CE91-4D71-A394-E6C71FB17CD6.webp': 'birthday',
+  '78FEB6E2-9B9E-492D-9AEF-184E808A633D.webp': 'wedding',
+  'IMG_7225.webp': 'corporate',
+  'B4A38432-2F7E-4DF6-AC0F-5E7D8EE4E209.webp': 'babyshower',
+  'D7B796D5-00BA-42FF-B7A5-FD1C754F8E2B.webp': 'birthday',
+  '2FFB3D60-CBD3-4BD8-A61B-E8768BE4FED2.webp': 'wedding',
+  '70B3D870-844F-41C9-A46D-CF9E30828E13.webp': 'corporate',
+  'D93468E2-1A8E-4907-B931-0C3B923B2F4C.webp': 'babyshower',
+  '95C17BB3-C25A-48C9-8308-520407A81C8E.webp': 'birthday',
+  '1E27F947-3ACE-4AED-95F1-0F79F644C986.webp': 'wedding',
+  '3821E836-1B0D-4E1F-9D6D-063025C4A66A.webp': 'corporate',
+  '68C9400B-36B8-43DF-91A3-E641E7B0F204.webp': 'babyshower',
+  '4DFA88B4-C603-4602-AD60-60E44F8973F1.webp': 'birthday',
+  '1E3726E7-10B3-4F9C-9257-937441014F1A.webp': 'wedding',
+  'A1E09A60-71C6-41E3-A140-185DB389ECAB.webp': 'corporate',
+  '29FA9E86-1BCF-4735-BF99-2AA5FFF63101.webp': 'babyshower',
+  '89FCB87D-D0E9-4531-A725-0AE88F4D2B57.webp': 'birthday',
+  '7AF28D08-2EA4-4C12-9197-EC1882526869.webp': 'wedding',
+  '10683988-A7C2-4015-8159-FF938A2B340D.webp': 'corporate',
+  '44E7BF22-6F3B-4A30-BA4B-FD6E3C157391.webp': 'babyshower',
+  '66E98D96-3E08-4E61-8BA2-1D0DA3902FA2.webp': 'birthday',
+  '6789E071-B745-451E-A49F-99DDE287E6AB.webp': 'wedding',
+  '21465F3E-B8DF-4ACA-A46F-EF060191EE85.webp': 'corporate',
+  '705A64C3-5D03-47EE-A85D-0C0FFEB8A57B.webp': 'babyshower',
+  'DBD3F050-36EE-4238-953F-3D503D05ABB0.webp': 'birthday',
+  'F909B614-1094-45E2-BD5E-5B2205C28EBC.webp': 'wedding',
+  'F8E883ED-8304-4847-9F56-2C8AA7F38F78.webp': 'corporate',
+  'D9EEE7A0-3F9D-41A5-AB81-672435C00B2D.webp': 'babyshower',
+  '30A56E4A-C85C-45FA-87DD-B559A675CD9E.webp': 'birthday',
+  'BA38C595-CE4F-413D-8932-31DA5374A8DD.webp': 'wedding',
+  '66152DB4-1C74-44A0-87D7-0CC4A5BC44F8.webp': 'corporate',
+  'EA2EC6C3-7460-43E4-AB12-F09A7A6A4387.webp': 'babyshower',
+  '33C3260E-B226-4CBF-9FB0-89D8FF178DD2.webp': 'birthday',
+  '0523BDD4-D1CF-4375-8A27-1834ED5CAF10.webp': 'wedding',
+  'IMG_4208.webp': 'corporate',
+  'EFA518AA-681F-483B-A183-DE89DAF6C0F6.webp': 'babyshower',
+  '7A592DEC-ADCB-4D9E-92CF-418A17C63396.webp': 'birthday',
+  'IMG_0312.webp': 'wedding',
+  '747EFCA5-6C42-48E5-9FBE-13A7CEA9B9F6.webp': 'corporate',
+  'F30CD089-7B50-4246-9365-C4E786A420DE.webp': 'babyshower',
+  'B68A2450-01A9-4BE2-84A4-94FAB323571F.webp': 'birthday',
+  'ADB9946F-4C64-4E07-9412-BB7D6F5DF771.webp': 'wedding',
+  'BA7016B8-221D-4EE4-A591-D195F5D27371.webp': 'corporate',
+  '399CCB98-0581-49EB-A7DD-A7FE165723B1.webp': 'babyshower',
+  '9080B576-6EDF-45E9-833B-AE65672CE867.webp': 'birthday',
+  'DC905D7D-0149-401D-88DA-99CC86DF9C02.webp': 'wedding',
+  '9AEC9186-6A3D-42C7-B9E9-BD9A4FC474A2.webp': 'corporate',
+  '8502B469-B1E0-4812-8EA2-1048C6B90876.webp': 'babyshower',
+  '3DDE2D6F-5FA3-43C8-91D0-27C34C5CDA67.webp': 'birthday',
+  '3A39B971-451C-4384-9353-C0F2F0AC7C7B.webp': 'wedding',
+  'F22A27C0-1D33-457A-8E37-F50C8212BA99.webp': 'corporate',
+  'IMG_7215.webp': 'babyshower',
+  '0EEFBED7-9C4C-42AD-9929-FBDDA1B4E922.webp': 'birthday',
+  '777D44CF-EA4C-4150-85C1-71B348DB9047.webp': 'wedding',
+  '96DC5D75-13BE-41C2-AFE0-7154F55A189D.webp': 'corporate',
+  '208F1AD7-58E0-49C3-B35F-AF49FC3F0CDE.webp': 'babyshower',
+  '8AD140B4-3256-4A54-BA15-81B4DC048BAF.webp': 'birthday',
+  'FBB21DED-0E2C-4C5A-8558-4FFD599010D2.webp': 'wedding',
+  'B4050052-25B0-4C39-9F7A-0363BE33FF80.webp': 'corporate',
+  '24863E95-84B8-40DA-A0A6-3CB066178DD8.webp': 'babyshower',
+  'IMG_7201.webp': 'birthday',
+  '2B6D9516-8D01-4752-9111-9462F5E79D5D.webp': 'wedding',
+  '3D4F81B9-B847-4A72-BE04-AD67736F24F6.webp': 'corporate',
+  '415713E8-4066-408C-8EC5-8E84C971979F.webp': 'babyshower',
+  '49078041-1180-4016-A797-9E0214568883.webp': 'birthday',
+  'BED69D2C-0886-40BA-9922-6C0B8BB0BB2A.webp': 'wedding',
+  '0EBCCFE4-A374-4A86-A12B-D27AB0D7AB25.webp': 'corporate',
+  '282E51EC-F8E9-4A37-BCF6-3132C52C6751.webp': 'babyshower',
+  'A615A628-87E2-4DB3-8695-D671143AAB5B.webp': 'birthday'
   };
   var galleryFiles = [
-  '0523BDD4-D1CF-4375-8A27-1834ED5CAF10.JPG', 
-  '0744315C-D24A-4CD5-A0E8-C6AB50BDE2DF.JPG', 
-  '0E76160B-8854-42E9-8C8C-C932ED7D3C13.JPG', 
-  '0EBCCFE4-A374-4A86-A12B-D27AB0D7AB25.JPG', 
-  '0EEFBED7-9C4C-42AD-9929-FBDDA1B4E922.JPG', 
-  '10683988-A7C2-4015-8159-FF938A2B340D.JPG', 
-  '16BAD5C4-CE91-4D71-A394-E6C71FB17CD6.JPG', 
-  '1D000A45-A36B-4782-B98B-05DE6AFB8DE3.JPG', 
-  '1E27F947-3ACE-4AED-95F1-0F79F644C986.JPG', 
-  '1E2BE317-DA39-4AF2-9A53-1F473331049B.JPG', 
-  '1E3726E7-10B3-4F9C-9257-937441014F1A.JPG', 
-  '208F1AD7-58E0-49C3-B35F-AF49FC3F0CDE.JPG', 
-  '21465F3E-B8DF-4ACA-A46F-EF060191EE85.JPG', 
-  '24863E95-84B8-40DA-A0A6-3CB066178DD8.JPG', 
-  '282E51EC-F8E9-4A37-BCF6-3132C52C6751.JPG', 
-  '29FA9E86-1BCF-4735-BF99-2AA5FFF63101.JPG', 
-  '2B52658A-34D4-4417-A05D-F83E408AB928.JPG', 
-  '2B6D9516-8D01-4752-9111-9462F5E79D5D.JPG', 
-  '2FFB3D60-CBD3-4BD8-A61B-E8768BE4FED2.JPG', 
-  '30A56E4A-C85C-45FA-87DD-B559A675CD9E.JPG', 
-  '33C3260E-B226-4CBF-9FB0-89D8FF178DD2.JPG', 
-  '34CBEE1B-8ED4-42F2-A0E9-E3FFAF9B80DA.JPG', 
-  '3797D487-9F8A-4AFD-BD6B-C7B4CC7489B9.JPG', 
-  '37E8A320-6067-4E0C-AFF3-595C9450B5E0.JPG', 
-  '3821E836-1B0D-4E1F-9D6D-063025C4A66A.JPG', 
-  '399CCB98-0581-49EB-A7DD-A7FE165723B1.JPG', 
-  '39C517C5-6E19-43AA-8E4D-E81EDE40F6C8.JPG', 
-  '3A39B971-451C-4384-9353-C0F2F0AC7C7B.JPG', 
-  '3D4F81B9-B847-4A72-BE04-AD67736F24F6.JPG', 
-  '3DDE2D6F-5FA3-43C8-91D0-27C34C5CDA67.JPG', 
-  '40AC94F3-CAD7-426E-BA70-4D1D0B722816.JPG', 
-  '415713E8-4066-408C-8EC5-8E84C971979F.JPG', 
-  '432B792D-F136-40C8-8BEB-1EBD7789CD54.JPG', 
-  '44E7BF22-6F3B-4A30-BA4B-FD6E3C157391.JPG', 
-  '470600E3-4507-4559-95A7-33D06D4F678B.JPG', 
-  '49078041-1180-4016-A797-9E0214568883.JPG', 
-  '4ABFCC78-00B7-41CB-9252-FF730B000661.JPG', 
-  '4DFA88B4-C603-4602-AD60-60E44F8973F1.JPG', 
-  '5128310E-B59A-4B19-BEB9-3244302D5484.JPG', 
-  '5371F14B-4BDA-4B35-9D2C-F982F2BAEAD8.JPG', 
-  '57B7DF0F-2E0E-4CCE-B98B-23BA73EDBCBA.JPG', 
-  '62BF8D5F-8ED9-43F7-8129-024B8521CE21.JPG', 
-  '6585A8CF-33E7-4921-BE9D-0DFBF36226AB.JPG', 
-  '66152DB4-1C74-44A0-87D7-0CC4A5BC44F8.JPG', 
-  '66E98D96-3E08-4E61-8BA2-1D0DA3902FA2.JPG', 
-  '6789E071-B745-451E-A49F-99DDE287E6AB.JPG', 
-  '68C9400B-36B8-43DF-91A3-E641E7B0F204.JPG', 
-  '6FEB105B-AE50-4157-806E-B960E9027B4B.JPG', 
-  '705A64C3-5D03-47EE-A85D-0C0FFEB8A57B.JPG', 
-  '70B3D870-844F-41C9-A46D-CF9E30828E13.JPG', 
-  '72C46CE7-649C-4CEB-8B3D-CEFA354FEF2F.JPG', 
-  '731DF57B-C138-49B3-8BAD-0132EEA9AB9B.JPG', 
-  '73758C5E-6743-4ADB-ABC0-314E4A79272B.JPG', 
-  '747EFCA5-6C42-48E5-9FBE-13A7CEA9B9F6.JPG', 
-  '777D44CF-EA4C-4150-85C1-71B348DB9047.JPG', 
-  '78FEB6E2-9B9E-492D-9AEF-184E808A633D.JPG', 
-  '7A45C820-B917-499E-B508-0C30F75B5BDA.JPG', 
-  '7A592DEC-ADCB-4D9E-92CF-418A17C63396.JPG', 
-  '7AF28D08-2EA4-4C12-9197-EC1882526869.JPG', 
-  '7AFD9CF5-A4EA-4AC4-A217-1AC33D5DC177.JPG', 
-  '7D6B9EF6-0430-4858-AD99-F813E4EFAFEB.JPG', 
-  '7FA6641E-D8BC-4EED-A4DB-5ED5B55386EE.JPG', 
-  '816E6CD6-116E-45EF-ACBC-549943122F11.JPG', 
-  '8424640A-0452-49B0-8FDF-0C0DF825D766.JPG', 
-  '8502B469-B1E0-4812-8EA2-1048C6B90876.JPG', 
-  '870D9268-FDAD-4A6A-81DB-657438266334.JPG', 
-  '87111272-3F8D-4E5C-B2C3-66C3C9529206.JPG', 
-  '87ABDD10-B02F-4A47-8A7D-143C88016055.JPG', 
-  '89FCB87D-D0E9-4531-A725-0AE88F4D2B57.JPG', 
-  '8AD140B4-3256-4A54-BA15-81B4DC048BAF.JPG', 
-  '8DC9E238-B8C1-45CC-A7E3-7BBB0B9B421E.JPG', 
-  '9080B576-6EDF-45E9-833B-AE65672CE867.JPG', 
-  '943A21B1-75DF-43C1-88F2-DDC317DD98A4.JPG', 
-  '9583779D-08C4-439A-9895-2E4E7C3F4118.JPG', 
-  '95C17BB3-C25A-48C9-8308-520407A81C8E.JPG', 
-  '96DC5D75-13BE-41C2-AFE0-7154F55A189D.JPG', 
-  '9AC9DEEB-DEB5-4657-8600-870814BD5532.JPG', 
-  '9AEC9186-6A3D-42C7-B9E9-BD9A4FC474A2.JPG', 
-  '9C72CDCE-7539-4146-8CF4-78E1D57C8BB7.JPG', 
-  'A1E09A60-71C6-41E3-A140-185DB389ECAB.JPG', 
-  'A48F492F-05CF-41C9-857F-A4F6E4CF2900.JPG', 
-  'A615A628-87E2-4DB3-8695-D671143AAB5B.JPG', 
-  'A9F4A531-555F-4F3C-B7FD-A138D7A3E68A.JPG', 
-  'ADB9946F-4C64-4E07-9412-BB7D6F5DF771.JPG', 
-  'AFF24DCE-0F03-4787-A994-8B2909493E46.JPG', 
-  'B3C6BD75-EE64-43B5-B47B-573CA52F2DC5.JPG', 
-  'B4050052-25B0-4C39-9F7A-0363BE33FF80.JPG', 
-  'B4A38432-2F7E-4DF6-AC0F-5E7D8EE4E209.JPG', 
-  'B653CCC5-03EB-4C3A-87F9-A67C078B5305.JPG', 
-  'B68A2450-01A9-4BE2-84A4-94FAB323571F.JPG', 
-  'BA38C595-CE4F-413D-8932-31DA5374A8DD.JPG', 
-  'BA7016B8-221D-4EE4-A591-D195F5D27371.JPG', 
-  'BAB84F60-816B-46D0-A686-C20F111D2EAD.JPG', 
-  'BAE95F70-8C93-4258-878B-C8F1072EE61A.JPG', 
-  'BED69D2C-0886-40BA-9922-6C0B8BB0BB2A.JPG', 
-  'C0B278E7-363B-44C8-956B-7AFA8D83C92E.JPG', 
-  'C371B279-0A54-408A-887C-77001683EFEF.JPG', 
-  'C6C0A571-CFCB-4AAF-9BC7-7CD64BE93D85.JPG', 
-  'CCB0EAAB-ED03-4DB0-8F00-5DF015C4227A.JPG', 
-  'CD11B737-A774-4BF8-B0BD-EB017CB846B6.JPG', 
-  'CD81C696-3876-433E-8079-5D06ED8D79B2.JPG', 
-  'D636A909-CC68-47D1-8738-F9C546E9331A.JPG', 
-  'D7995E94-06DA-45F9-A185-7EAD31B79211.JPG', 
-  'D7B796D5-00BA-42FF-B7A5-FD1C754F8E2B.JPG', 
-  'D93468E2-1A8E-4907-B931-0C3B923B2F4C.JPG', 
-  'D9EEE7A0-3F9D-41A5-AB81-672435C00B2D.JPG', 
-  'DBD3F050-36EE-4238-953F-3D503D05ABB0.JPG', 
-  'DC905D7D-0149-401D-88DA-99CC86DF9C02.JPG', 
-  'E2C2E93C-4D46-47DA-98C9-DFA993BF509A.JPG', 
-  'EA2EC6C3-7460-43E4-AB12-F09A7A6A4387.JPG', 
-  'EFA518AA-681F-483B-A183-DE89DAF6C0F6.JPG', 
-  'F22A27C0-1D33-457A-8E37-F50C8212BA99.JPG', 
-  'F30CD089-7B50-4246-9365-C4E786A420DE.JPG', 
-  'F3895621-0E25-4DA6-971E-6A272D76543B.JPG', 
-  'F8E883ED-8304-4847-9F56-2C8AA7F38F78.jpg', 
-  'F909B614-1094-45E2-BD5E-5B2205C28EBC.JPG', 
-  'FBB21DED-0E2C-4C5A-8558-4FFD599010D2.JPG', 
-  'image.JPG', 
-  'IMG_0312.jpg', 
-  'IMG_1255.jpg', 
-  'IMG_4208.jpg', 
-  'IMG_7201.jpg', 
-  'IMG_7215.jpg', 
-  'IMG_7225.jpg', 
-  'IMG_R_0034.JPG'
+  '0523BDD4-D1CF-4375-8A27-1834ED5CAF10.webp', 
+  '0744315C-D24A-4CD5-A0E8-C6AB50BDE2DF.webp', 
+  '0E76160B-8854-42E9-8C8C-C932ED7D3C13.webp', 
+  '0EBCCFE4-A374-4A86-A12B-D27AB0D7AB25.webp', 
+  '0EEFBED7-9C4C-42AD-9929-FBDDA1B4E922.webp', 
+  '10683988-A7C2-4015-8159-FF938A2B340D.webp', 
+  '16BAD5C4-CE91-4D71-A394-E6C71FB17CD6.webp', 
+  '1D000A45-A36B-4782-B98B-05DE6AFB8DE3.webp', 
+  '1E27F947-3ACE-4AED-95F1-0F79F644C986.webp', 
+  '1E2BE317-DA39-4AF2-9A53-1F473331049B.webp', 
+  '1E3726E7-10B3-4F9C-9257-937441014F1A.webp', 
+  '208F1AD7-58E0-49C3-B35F-AF49FC3F0CDE.webp', 
+  '21465F3E-B8DF-4ACA-A46F-EF060191EE85.webp', 
+  '24863E95-84B8-40DA-A0A6-3CB066178DD8.webp', 
+  '282E51EC-F8E9-4A37-BCF6-3132C52C6751.webp', 
+  '29FA9E86-1BCF-4735-BF99-2AA5FFF63101.webp', 
+  '2B52658A-34D4-4417-A05D-F83E408AB928.webp', 
+  '2B6D9516-8D01-4752-9111-9462F5E79D5D.webp', 
+  '2FFB3D60-CBD3-4BD8-A61B-E8768BE4FED2.webp', 
+  '30A56E4A-C85C-45FA-87DD-B559A675CD9E.webp', 
+  '33C3260E-B226-4CBF-9FB0-89D8FF178DD2.webp', 
+  '34CBEE1B-8ED4-42F2-A0E9-E3FFAF9B80DA.webp', 
+  '3797D487-9F8A-4AFD-BD6B-C7B4CC7489B9.webp', 
+  '37E8A320-6067-4E0C-AFF3-595C9450B5E0.webp', 
+  '3821E836-1B0D-4E1F-9D6D-063025C4A66A.webp', 
+  '399CCB98-0581-49EB-A7DD-A7FE165723B1.webp', 
+  '39C517C5-6E19-43AA-8E4D-E81EDE40F6C8.webp', 
+  '3A39B971-451C-4384-9353-C0F2F0AC7C7B.webp', 
+  '3D4F81B9-B847-4A72-BE04-AD67736F24F6.webp', 
+  '3DDE2D6F-5FA3-43C8-91D0-27C34C5CDA67.webp', 
+  '40AC94F3-CAD7-426E-BA70-4D1D0B722816.webp', 
+  '415713E8-4066-408C-8EC5-8E84C971979F.webp', 
+  '432B792D-F136-40C8-8BEB-1EBD7789CD54.webp', 
+  '44E7BF22-6F3B-4A30-BA4B-FD6E3C157391.webp', 
+  '470600E3-4507-4559-95A7-33D06D4F678B.webp', 
+  '49078041-1180-4016-A797-9E0214568883.webp', 
+  '4ABFCC78-00B7-41CB-9252-FF730B000661.webp', 
+  '4DFA88B4-C603-4602-AD60-60E44F8973F1.webp', 
+  '5128310E-B59A-4B19-BEB9-3244302D5484.webp', 
+  '5371F14B-4BDA-4B35-9D2C-F982F2BAEAD8.webp', 
+  '57B7DF0F-2E0E-4CCE-B98B-23BA73EDBCBA.webp', 
+  '62BF8D5F-8ED9-43F7-8129-024B8521CE21.webp', 
+  '6585A8CF-33E7-4921-BE9D-0DFBF36226AB.webp', 
+  '66152DB4-1C74-44A0-87D7-0CC4A5BC44F8.webp', 
+  '66E98D96-3E08-4E61-8BA2-1D0DA3902FA2.webp', 
+  '6789E071-B745-451E-A49F-99DDE287E6AB.webp', 
+  '68C9400B-36B8-43DF-91A3-E641E7B0F204.webp', 
+  '6FEB105B-AE50-4157-806E-B960E9027B4B.webp', 
+  '705A64C3-5D03-47EE-A85D-0C0FFEB8A57B.webp', 
+  '70B3D870-844F-41C9-A46D-CF9E30828E13.webp', 
+  '72C46CE7-649C-4CEB-8B3D-CEFA354FEF2F.webp', 
+  '731DF57B-C138-49B3-8BAD-0132EEA9AB9B.webp', 
+  '73758C5E-6743-4ADB-ABC0-314E4A79272B.webp', 
+  '747EFCA5-6C42-48E5-9FBE-13A7CEA9B9F6.webp', 
+  '777D44CF-EA4C-4150-85C1-71B348DB9047.webp', 
+  '78FEB6E2-9B9E-492D-9AEF-184E808A633D.webp', 
+  '7A45C820-B917-499E-B508-0C30F75B5BDA.webp', 
+  '7A592DEC-ADCB-4D9E-92CF-418A17C63396.webp', 
+  '7AF28D08-2EA4-4C12-9197-EC1882526869.webp', 
+  '7AFD9CF5-A4EA-4AC4-A217-1AC33D5DC177.webp', 
+  '7D6B9EF6-0430-4858-AD99-F813E4EFAFEB.webp', 
+  '7FA6641E-D8BC-4EED-A4DB-5ED5B55386EE.webp', 
+  '816E6CD6-116E-45EF-ACBC-549943122F11.webp', 
+  '8424640A-0452-49B0-8FDF-0C0DF825D766.webp', 
+  '8502B469-B1E0-4812-8EA2-1048C6B90876.webp', 
+  '870D9268-FDAD-4A6A-81DB-657438266334.webp', 
+  '87111272-3F8D-4E5C-B2C3-66C3C9529206.webp', 
+  '87ABDD10-B02F-4A47-8A7D-143C88016055.webp', 
+  '89FCB87D-D0E9-4531-A725-0AE88F4D2B57.webp', 
+  '8AD140B4-3256-4A54-BA15-81B4DC048BAF.webp', 
+  '8DC9E238-B8C1-45CC-A7E3-7BBB0B9B421E.webp', 
+  '9080B576-6EDF-45E9-833B-AE65672CE867.webp', 
+  '943A21B1-75DF-43C1-88F2-DDC317DD98A4.webp', 
+  '9583779D-08C4-439A-9895-2E4E7C3F4118.webp', 
+  '95C17BB3-C25A-48C9-8308-520407A81C8E.webp', 
+  '96DC5D75-13BE-41C2-AFE0-7154F55A189D.webp', 
+  '9AC9DEEB-DEB5-4657-8600-870814BD5532.webp', 
+  '9AEC9186-6A3D-42C7-B9E9-BD9A4FC474A2.webp', 
+  '9C72CDCE-7539-4146-8CF4-78E1D57C8BB7.webp', 
+  'A1E09A60-71C6-41E3-A140-185DB389ECAB.webp', 
+  'A48F492F-05CF-41C9-857F-A4F6E4CF2900.webp', 
+  'A615A628-87E2-4DB3-8695-D671143AAB5B.webp', 
+  'A9F4A531-555F-4F3C-B7FD-A138D7A3E68A.webp', 
+  'ADB9946F-4C64-4E07-9412-BB7D6F5DF771.webp', 
+  'AFF24DCE-0F03-4787-A994-8B2909493E46.webp', 
+  'B3C6BD75-EE64-43B5-B47B-573CA52F2DC5.webp', 
+  'B4050052-25B0-4C39-9F7A-0363BE33FF80.webp', 
+  'B4A38432-2F7E-4DF6-AC0F-5E7D8EE4E209.webp', 
+  'B653CCC5-03EB-4C3A-87F9-A67C078B5305.webp', 
+  'B68A2450-01A9-4BE2-84A4-94FAB323571F.webp', 
+  'BA38C595-CE4F-413D-8932-31DA5374A8DD.webp', 
+  'BA7016B8-221D-4EE4-A591-D195F5D27371.webp', 
+  'BAB84F60-816B-46D0-A686-C20F111D2EAD.webp', 
+  'BAE95F70-8C93-4258-878B-C8F1072EE61A.webp', 
+  'BED69D2C-0886-40BA-9922-6C0B8BB0BB2A.webp', 
+  'C0B278E7-363B-44C8-956B-7AFA8D83C92E.webp', 
+  'C371B279-0A54-408A-887C-77001683EFEF.webp', 
+  'C6C0A571-CFCB-4AAF-9BC7-7CD64BE93D85.webp', 
+  'CCB0EAAB-ED03-4DB0-8F00-5DF015C4227A.webp', 
+  'CD11B737-A774-4BF8-B0BD-EB017CB846B6.webp', 
+  'CD81C696-3876-433E-8079-5D06ED8D79B2.webp', 
+  'D636A909-CC68-47D1-8738-F9C546E9331A.webp', 
+  'D7995E94-06DA-45F9-A185-7EAD31B79211.webp', 
+  'D7B796D5-00BA-42FF-B7A5-FD1C754F8E2B.webp', 
+  'D93468E2-1A8E-4907-B931-0C3B923B2F4C.webp', 
+  'D9EEE7A0-3F9D-41A5-AB81-672435C00B2D.webp', 
+  'DBD3F050-36EE-4238-953F-3D503D05ABB0.webp', 
+  'DC905D7D-0149-401D-88DA-99CC86DF9C02.webp', 
+  'E2C2E93C-4D46-47DA-98C9-DFA993BF509A.webp', 
+  'EA2EC6C3-7460-43E4-AB12-F09A7A6A4387.webp', 
+  'EFA518AA-681F-483B-A183-DE89DAF6C0F6.webp', 
+  'F22A27C0-1D33-457A-8E37-F50C8212BA99.webp', 
+  'F30CD089-7B50-4246-9365-C4E786A420DE.webp', 
+  'F3895621-0E25-4DA6-971E-6A272D76543B.webp', 
+  'F8E883ED-8304-4847-9F56-2C8AA7F38F78.webp', 
+  'F909B614-1094-45E2-BD5E-5B2205C28EBC.webp', 
+  'FBB21DED-0E2C-4C5A-8558-4FFD599010D2.webp', 
+  'image.webp', 
+  'IMG_0312.webp', 
+  'IMG_1255.webp', 
+  'IMG_4208.webp', 
+  'IMG_7201.webp', 
+  'IMG_7215.webp', 
+  'IMG_7225.webp', 
+  'IMG_R_0034.webp'
   ];
+  // Общий список роликов: фон хиро на главной + раздел «Видео» в галерее.
+  // update-videos.sh регенерирует его по содержимому images/videos/.
+  var videoFiles = [
+      '21648386-BF0B-4BC9-9121-B91E654D624B.mp4',
+      '3C66D7B5-A73C-4F7F-94BD-9D1E2C2F4E15.mp4',
+      '48097ACB-A510-486B-A904-FC138491F799.mp4',
+      '4EEB4351-22FD-416A-9497-C2C4C504C607.mp4',
+      '6B035B18-C131-40DB-816B-2572424A8183.mp4',
+      '79A4AB79-D2F1-4541-8FB8-D9FAE94621FE.mp4',
+      '83B1BC35-5A64-44F1-BCCF-DE8DAE8135CD.mp4',
+      'AF3E489C-A6DF-449D-B7B0-4FE0E8F57FBE.mp4',
+      'IMG_8595.mp4',
+      'IMG_8824.mp4',
+      'IMG_9015.mp4',
+      'video-12-04-23-07-25-3.mp4',
+      'video-12-04-23-07-29-3.mp4',
+      'video-12-04-23-07-55.mp4',
+      'video-12-04-23-08-22.mp4'
+    ];
   if (galleryGrid) {
     galleryGrid.innerHTML = '';
 
@@ -366,15 +409,6 @@ document.addEventListener('DOMContentLoaded', function() {
       item.className = 'gallery-item reveal';
       var cat = galleryCat[file];
       if (cat) item.setAttribute('data-category', cat);
-
-      var toWebP = function(f) { return f.replace(/\.(jpg|jpeg|JPG|JPEG)$/, '.webp'); };
-      var webpFile = toWebP(file);
-
-      var picture = document.createElement('picture');
-      var source = document.createElement('source');
-      source.srcset = 'images/gallery/' + webpFile;
-      source.type = 'image/webp';
-      picture.appendChild(source);
 
       var img = document.createElement('img');
       img.src = 'images/gallery/' + file;
@@ -421,14 +455,54 @@ document.addEventListener('DOMContentLoaded', function() {
           if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
         });
       })(item, idx);
-      picture.appendChild(img);
 
       item.innerHTML = '<div class="gallery-error-msg">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">' +
         '<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h0" stroke-linecap="round"/></svg>' +
         '<span>Failed to load</span></div>' +
         '<div class="gallery-overlay"><span class="gallery-overlay-label" data-i18n="gallery.img.label">View</span><span class="gallery-overlay-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>';
-      item.insertBefore(picture, item.firstChild);
+      item.insertBefore(img, item.firstChild);
+      return item;
+    }
+
+    function createVideoItem(file, idx) {
+      var item = document.createElement('div');
+      item.className = 'gallery-item gallery-video reveal';
+      item.setAttribute('data-category', 'video');
+      item.setAttribute('data-video', 'images/videos/' + file);
+      // Вертикальные ролики с телефона — до прихода metadata держим 9:16,
+      // чтобы колонки не прыгали.
+      item.style.aspectRatio = '9 / 16';
+
+      var vid = document.createElement('video');
+      vid.src = 'images/videos/' + file;
+      vid.muted = true;
+      vid.playsInline = true;
+      vid.preload = 'metadata';
+      vid.setAttribute('aria-hidden', 'true');
+      vid.tabIndex = -1;
+      vid.addEventListener('loadedmetadata', function() {
+        if (vid.videoWidth && vid.videoHeight) {
+          item.style.aspectRatio = vid.videoWidth / vid.videoHeight;
+        }
+      });
+      item.appendChild(vid);
+
+      var badge = document.createElement('span');
+      badge.className = 'gallery-video-badge';
+      badge.setAttribute('aria-hidden', 'true');
+      badge.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+      item.appendChild(badge);
+
+      item.setAttribute('role', 'button');
+      item.setAttribute('tabindex', '0');
+      item.setAttribute('aria-label', 'Video');
+      item.setAttribute('data-i18n-aria', 'gallery.video.alt');
+      var open = function() { currentIndex = idx; openLightbox(idx); };
+      item.addEventListener('click', open);
+      item.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+      });
       return item;
     }
 
@@ -436,6 +510,10 @@ document.addEventListener('DOMContentLoaded', function() {
     var totalGalleryItems = galleryFiles.length;
     for (var i = 0; i < galleryFiles.length; i++) {
       fragment.appendChild(createGalleryItem(galleryFiles[i], i));
+    }
+    // Ролики идут после фото; лайтбокс их видит по data-video
+    for (var vi = 0; vi < videoFiles.length; vi++) {
+      fragment.appendChild(createVideoItem(videoFiles[vi], galleryFiles.length + vi));
     }
     galleryGrid.appendChild(fragment);
 
@@ -527,24 +605,6 @@ document.addEventListener('DOMContentLoaded', function() {
   var heroVideo2 = document.getElementById('heroVideo2');
 
   if (heroVideoBg && (heroVideoSingle || heroVideo0)) {
-    var videoFiles = [
-      '21648386-BF0B-4BC9-9121-B91E654D624B.mp4', 
-      '3C66D7B5-A73C-4F7F-94BD-9D1E2C2F4E15.mp4', 
-      '48097ACB-A510-486B-A904-FC138491F799.mp4', 
-      '4EEB4351-22FD-416A-9497-C2C4C504C607.mp4', 
-      '6B035B18-C131-40DB-816B-2572424A8183.mp4', 
-      '79A4AB79-D2F1-4541-8FB8-D9FAE94621FE.mp4', 
-      '83B1BC35-5A64-44F1-BCCF-DE8DAE8135CD.mp4', 
-      'AF3E489C-A6DF-449D-B7B0-4FE0E8F57FBE.mp4', 
-      'IMG_8595.mp4', 
-      'IMG_8824.mp4', 
-      'IMG_9015.mp4', 
-      'video-12-04-23-07-25-3.mp4', 
-      'video-12-04-23-07-29-3.mp4', 
-      'video-12-04-23-07-55.mp4', 
-      'video-12-04-23-08-22.mp4'
-    ];
-
     var currentMode = '';
     var singleSlot = null;
     var slots = [];
@@ -1127,8 +1187,14 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     })();
     var commentInput = document.getElementById('formComment');
+    var dateInput = document.getElementById('formDate');
     var nameError = document.getElementById('nameError');
     var phoneError = document.getElementById('phoneError');
+    var dateError = document.getElementById('dateError');
+    if (dateInput) {
+      // Заказы не бывают в прошлом — календарь начинается с сегодня
+      dateInput.min = new Date().toISOString().slice(0, 10);
+    }
     var backendUrl = (typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'http://localhost:5000') + '/api/lead';
 
     var countries = {
@@ -1176,6 +1242,20 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
+    function validateDate() {
+      // Поле необязательное — ошибкой считается только дата в прошлом
+      if (!dateInput || !dateInput.value) {
+        if (dateInput) dateInput.classList.remove('error');
+        if (dateError) dateError.classList.remove('show');
+        return true;
+      }
+      var today = new Date().toISOString().slice(0, 10);
+      var valid = dateInput.value >= today;
+      dateInput.classList.toggle('error', !valid);
+      if (dateError) dateError.classList.toggle('show', !valid);
+      return valid;
+    }
+
     function validateName() {
       var val = nameInput.value.trim();
       if (val.length < 2) {
@@ -1216,6 +1296,13 @@ document.addEventListener('DOMContentLoaded', function() {
       phoneError.classList.remove('show');
       formatPhone();
     });
+
+    if (dateInput) {
+      dateInput.addEventListener('input', function() {
+        dateInput.classList.remove('error');
+        if (dateError) dateError.classList.remove('show');
+      });
+    }
 
     countrySelect.addEventListener('change', function() {
       phoneInput.value = '';
@@ -1280,7 +1367,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function focusFirstError() {
       var fields = [
         { el: nameInput, valid: validateName },
-        { el: phoneInput, valid: validatePhone }
+        { el: phoneInput, valid: validatePhone },
+        { el: dateInput, valid: validateDate }
       ];
       for (var i = 0; i < fields.length; i++) {
         var f = fields[i];
@@ -1296,7 +1384,8 @@ document.addEventListener('DOMContentLoaded', function() {
       e.preventDefault();
       var isNameValid = validateName();
       var isPhoneValid = validatePhone();
-      if (!isNameValid || !isPhoneValid) {
+      var isDateValid = validateDate();
+      if (!isNameValid || !isPhoneValid || !isDateValid) {
         focusFirstError();
         return;
       }
@@ -1308,6 +1397,7 @@ document.addEventListener('DOMContentLoaded', function() {
         phone: phoneInput.value.trim(),
         country: cfg.code,
         event_type: typeSelect.value || typeSelect.options[typeSelect.selectedIndex].text,
+        event_date: dateInput ? dateInput.value : '',
         comment: commentInput.value.trim(),
         page_url: window.location.href,
         language: typeof currentLang !== 'undefined' ? currentLang : 'de'

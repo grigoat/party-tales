@@ -122,6 +122,15 @@ def escape(text):
     return html.escape(str(text), quote=False)
 
 
+def _format_event_date(value):
+    """Form sends ISO (YYYY-MM-DD); managers read DD.MM.YYYY."""
+    try:
+        y, m, d = value.split('-')
+        return f'{d}.{m}.{y}'
+    except ValueError:
+        return value
+
+
 def format_lead(lead):
     lines = [
         f'<b>{EMOJI_BELL} Заявка #{lead["id"]}</b>',
@@ -131,6 +140,8 @@ def format_lead(lead):
     ]
     if lead.get('event_type'):
         lines.append(f'<b>Мероприятие:</b> {escape(lead["event_type"])}')
+    if lead.get('event_date'):
+        lines.append(f'<b>Дата события:</b> {escape(_format_event_date(lead["event_date"]))}')
     if lead.get('comment'):
         lines.append(f'<b>Пожелания:</b> {escape(lead["comment"])}')
     lines += [

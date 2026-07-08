@@ -48,6 +48,9 @@ to the visitor.
 - **Balloons ceiling** (ceiling installation) — latex 15 pcs ≈ 105 CHF; foil 15 pcs
   ≈ 100 CHF (about 7 CHF per balloon).
 - **Kitty** — a cute cat-themed composition. **50 CHF**.
+- **Gender Reveal** — a balloon surprise in pink or blue that reveals the baby's
+  gender, designed individually for the occasion. Price on request — offer a
+  personal quote.
 - **Custom projects** — arches, balloon installations, photo walls / photo zones,
   full event styling, and rental + installation of decor items. We sketch a design,
   source materials and deliver turnkey. Price depends on scope — offer a personal quote.

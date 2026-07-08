@@ -20,6 +20,44 @@
   <link rel="alternate" hreflang="x-default" href="https://partytales.ch/contacts.html">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com; media-src 'self'; connect-src 'self' https:">
   <title data-i18n-title="contacts.page.title.full">Контакты | PARTY TALES</title>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Wie lange halten die Ballons?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Wir verwenden nur Premium-Materialien von geprüften Lieferanten — die Kompositionen behalten ihre Schönheit bis zu 2 Wochen. Ballons sind empfindlich gegenüber Temperatur und Feuchtigkeit, drinnen halten sie am längsten." }
+      },
+      {
+        "@type": "Question",
+        "name": "Wie früh sollte ich bestellen?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Am besten einige Tage im Voraus — so bleibt Zeit für Entwurf und Materialauswahl. Kurzfristige Wünsche? Fragen Sie einfach an — wir tun unser Möglichstes." }
+      },
+      {
+        "@type": "Question",
+        "name": "Was kostet die Lieferung?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Ab 100 CHF Bestellwert liefern wir im Umkreis von 20 km um Zug kostenlos. Ausserhalb dieses Radius fällt ein Aufpreis an — wir nennen Ihnen gerne den genauen Preis für Ihren Ort." }
+      },
+      {
+        "@type": "Question",
+        "name": "Wo sind Sie tätig?",
+        "acceptedAnswer": { "@type": "Answer", "text": "In den Kantonen Zug, Schwyz, Luzern und Zürich. Wir kommen auch in andere Schweizer Städte — sprechen Sie uns an." }
+      },
+      {
+        "@type": "Question",
+        "name": "Kann ich eine Bestellung stornieren?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Ja — bis 48 Stunden vor der geplanten Lieferung oder Installation kostenlos mit voller Rückerstattung. Individuelle Anfertigungen sind nach Produktionsbeginn ausgeschlossen." }
+      },
+      {
+        "@type": "Question",
+        "name": "Wie läuft die Bezahlung?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Die Zahlung erfolgt vollständig vor der Lieferung oder Installation, sofern nichts anderes vereinbart wurde. Bei individuellen Projekten kann eine Anzahlung erforderlich sein." }
+      }
+    ]
+  }
+  </script>
   <link rel="icon" type="image/png" href="images/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -158,6 +196,11 @@
           <div class="form-error" id="phoneError" data-i18n="contacts.form.phone.error">Please enter a valid number</div>
         </div>
         <div class="form-group">
+          <label for="formDate" data-i18n="contacts.form.date.label">Event date</label>
+          <input type="date" id="formDate" autocomplete="off">
+          <div class="form-error" id="dateError" data-i18n="contacts.form.date.error">Please choose a future date</div>
+        </div>
+        <div class="form-group">
           <label for="formType" data-i18n="contacts.form.type.label">Event type</label>
           <select id="formType">
             <option value="" data-i18n="contacts.form.type.placeholder">Select type</option>
@@ -175,6 +218,39 @@
         </div>
         <button type="submit" class="btn btn-primary" data-i18n="contacts.form.submit">Send request</button>
       </form>
+    </div>
+  </div>
+</section>
+
+<section class="bg-soft" id="faq">
+  <div class="container">
+    <div class="section-label text-center reveal" data-i18n="contacts.faq.label">Häufige Fragen</div>
+    <h2 class="section-title text-center reveal" data-i18n="contacts.faq.title">Gut zu <span class="hero-emphasis">wissen.</span></h2>
+    <div class="faq-list">
+      <details class="faq-item reveal">
+        <summary><span data-i18n="contacts.faq.q1">Wie lange halten die Ballons?</span><span class="faq-icon" aria-hidden="true"></span></summary>
+        <p data-i18n="contacts.faq.a1">Wir verwenden nur Premium-Materialien von geprüften Lieferanten &mdash; die Kompositionen behalten ihre Schönheit bis zu 2 Wochen. Ballons sind empfindlich gegenüber Temperatur und Feuchtigkeit, drinnen halten sie am längsten.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary><span data-i18n="contacts.faq.q2">Wie früh sollte ich bestellen?</span><span class="faq-icon" aria-hidden="true"></span></summary>
+        <p data-i18n="contacts.faq.a2">Am besten einige Tage im Voraus &mdash; so bleibt Zeit für Entwurf und Materialauswahl. Kurzfristige Wünsche? Fragen Sie einfach an &mdash; wir tun unser Möglichstes.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary><span data-i18n="contacts.faq.q3">Was kostet die Lieferung?</span><span class="faq-icon" aria-hidden="true"></span></summary>
+        <p data-i18n="contacts.faq.a3">Ab 100 CHF Bestellwert liefern wir im Umkreis von 20 km um Zug kostenlos. Ausserhalb dieses Radius fällt ein Aufpreis an &mdash; wir nennen Ihnen gerne den genauen Preis für Ihren Ort.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary><span data-i18n="contacts.faq.q4">Wo sind Sie tätig?</span><span class="faq-icon" aria-hidden="true"></span></summary>
+        <p data-i18n="contacts.faq.a4">In den Kantonen Zug, Schwyz, Luzern und Zürich. Wir kommen auch in andere Schweizer Städte &mdash; sprechen Sie uns an.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary><span data-i18n="contacts.faq.q5">Kann ich eine Bestellung stornieren?</span><span class="faq-icon" aria-hidden="true"></span></summary>
+        <p data-i18n="contacts.faq.a5">Ja &mdash; bis 48 Stunden vor der geplanten Lieferung oder Installation kostenlos mit voller Rückerstattung. Individuelle Anfertigungen sind nach Produktionsbeginn ausgeschlossen.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary><span data-i18n="contacts.faq.q6">Wie läuft die Bezahlung?</span><span class="faq-icon" aria-hidden="true"></span></summary>
+        <p data-i18n="contacts.faq.a6">Die Zahlung erfolgt vollständig vor der Lieferung oder Installation, sofern nichts anderes vereinbart wurde. Bei individuellen Projekten kann eine Anzahlung erforderlich sein.</p>
+      </details>
     </div>
   </div>
 </section>

@@ -12,6 +12,7 @@ FIELD_LIMITS = {
     'phone': 30,
     'country': 10,
     'event_type': 200,
+    'event_date': 20,
     'comment': 2000,
     'page_url': 500,
     'language': 10,
@@ -23,7 +24,7 @@ def validate_lead_data(data: dict) -> tuple[dict | None, str | None]:
     cleaned = {}
     fields_over_limit = set()
 
-    for field in ('name', 'phone', 'country', 'event_type', 'comment', 'page_url', 'language'):
+    for field in ('name', 'phone', 'country', 'event_type', 'event_date', 'comment', 'page_url', 'language'):
         value = (data.get(field) or '').strip()
         max_len = FIELD_LIMITS.get(field)
         if max_len and len(value) > max_len:
@@ -52,6 +53,7 @@ def create_lead(data: dict) -> tuple[dict | None, int | None]:
         phone=cleaned['phone'],
         country=cleaned['country'],
         event_type=cleaned['event_type'],
+        event_date=cleaned['event_date'],
         comment=cleaned['comment'],
         page_url=cleaned['page_url'],
         language=cleaned['language'],
