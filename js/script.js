@@ -1198,9 +1198,20 @@ document.addEventListener('DOMContentLoaded', function() {
     function syncDateLook() {
       if (dateInput) dateInput.classList.toggle('has-value', !!dateInput.value);
     }
+    // toISOString() даёт дату по UTC — около полуночи она отстаёт от местной
+    // на день, поэтому собираем YYYY-MM-DD из локальных компонентов
+    function localDateStr(offsetDays) {
+      var d = new Date();
+      if (offsetDays) d.setDate(d.getDate() + offsetDays);
+      var m = d.getMonth() + 1;
+      var day = d.getDate();
+      return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
+    }
     if (dateInput) {
-      // Заказы не бывают в прошлом — календарь начинается с сегодня
-      dateInput.min = new Date().toISOString().slice(0, 10);
+      // Заказы не бывают в прошлом — календарь начинается с сегодня,
+      // а верхняя граница в два года отсекает опечатки в годе
+      dateInput.min = localDateStr(0);
+      dateInput.max = localDateStr(730);
       dateInput.addEventListener('input', syncDateLook);
       dateInput.addEventListener('change', syncDateLook);
       syncDateLook();
@@ -1259,8 +1270,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (dateError) dateError.classList.remove('show');
         return true;
       }
-      var today = new Date().toISOString().slice(0, 10);
-      var valid = dateInput.value >= today;
+      var valid = dateInput.value >= localDateStr(0) &&
+                  (!dateInput.max || dateInput.value <= dateInput.max);
       dateInput.classList.toggle('error', !valid);
       if (dateError) dateError.classList.toggle('show', !valid);
       return valid;
@@ -1312,6 +1323,9 @@ document.addEventListener('DOMContentLoaded', function() {
         dateInput.classList.remove('error');
         if (dateError) dateError.classList.remove('show');
       });
+      // Не ждём отправки формы: набранная вручную невалидная дата
+      // подсвечивается сразу, как только пользователь ушёл с поля
+      dateInput.addEventListener('blur', validateDate);
     }
 
     countrySelect.addEventListener('change', function() {
