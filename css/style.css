@@ -74,7 +74,7 @@
 }
 html { scroll-behavior: smooth; overflow-x: clip; }
 /* Keep anchor / skip-link targets clear of the fixed navigation bar. */
-:target, #main-content, main > section[id] { scroll-margin-top: 6rem; }
+:target, #main-content, main > section[id] { scroll-margin-top: 7rem; }
 /* ── Reveal Animations ── */
 /* No-JS / no-IntersectionObserver fallback: never hide content from users
    who can't run the reveal observer (SEO, screen readers, disabled JS). */
@@ -162,8 +162,8 @@ nav.scrolled {
   padding: .8rem 3rem;
 }
 .logo { display: flex; align-items: center; }
-.logo img { height: clamp(50px, 6vw, 76px); width: auto; display: block; transition: height .4s; }
-nav.scrolled .logo img { height: clamp(46px, 5vw, 64px); }
+.logo img { height: clamp(60px, 7.2vw, 92px); width: auto; display: block; transition: height .4s; }
+nav.scrolled .logo img { height: clamp(54px, 6vw, 78px); }
 .nav-links { display: flex; gap: 2.2rem; list-style: none; align-items: center; }
 .nav-links a {
   font-size: .75rem;
@@ -305,6 +305,10 @@ nav.scrolled + * .lang-dropdown { /* handled by data attribute */ }
 .nav-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
 .nav-toggle.active span:nth-child(2) { opacity: 0; }
 .nav-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(5px,-5px); }
+/* Once open, the burger sits on the light menu panel — the white "on hero"
+   colour would make the X invisible there, so force it dark. */
+nav .nav-toggle.active span,
+nav.nav-hero:not(.scrolled) .nav-toggle.active span { background: var(--color-text); }
 
 /* ── Buttons ── */
 .btn {
