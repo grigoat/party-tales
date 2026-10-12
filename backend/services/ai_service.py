@@ -50,6 +50,31 @@ def _load_knowledge() -> str:
     return _knowledge or ''
 
 
+# Providers retire models (Groq dropped llama-3.3-70b-versatile in 2026), so when
+# the configured one is gone we switch to the first of these the key can use.
+FALLBACK_MODELS = (
+    'meta-llama/llama-4-maverick-17b-128e-instruct',
+    'moonshotai/kimi-k2-instruct',
+    'openai/gpt-oss-120b',
+    'meta-llama/llama-4-scout-17b-16e-instruct',
+    'llama-3.1-8b-instant',
+)
+_model = AI_MODEL
+
+
+def _pick_fallback_model(client, dead):
+    try:
+        available = {m.id for m in client.models.list().data}
+    except Exception as e:
+        logger.error('AI model list failed: %s', e)
+        return None
+    logger.info('AI models available: %s', sorted(available))
+    for m in FALLBACK_MODELS:
+        if m != dead and m in available:
+            return m
+    return None
+
+
 def _get_client():
     global _client
     if _client is None:
@@ -211,19 +236,32 @@ def generate_reply(session: dict, history: list) -> str | None:
         language=session.get('language') or 'de',
     )
 
-    try:
-        resp = client.chat.completions.create(
-            model=AI_MODEL,
-            max_tokens=MAX_REPLY_TOKENS,
-            temperature=0.7,
-            messages=[{'role': 'system', 'content': system}] + messages,
-        )
-    except Exception as e:
-        logger.error('AI reply generation failed: %s', e)
+    global _model
+    for _ in range(2):
+        try:
+            resp = client.chat.completions.create(
+                model=_model,
+                max_tokens=MAX_REPLY_TOKENS,
+                temperature=0.7,
+                messages=[{'role': 'system', 'content': system}] + messages,
+            )
+            break
+        except Exception as e:
+            logger.error('AI reply generation failed (%s): %s', _model, e)
+            if 'model_not_found' not in str(e) and 'decommissioned' not in str(e):
+                return None
+            fallback = _pick_fallback_model(client, _model)
+            if not fallback:
+                return None
+            logger.warning('AI model %s is gone, switching to %s', _model, fallback)
+            _model = fallback
+    else:
         return None
 
     try:
-        reply = (resp.choices[0].message.content or '').strip()
+        reply = (resp.choices[0].message.content or '')
+        # Some fallback models prepend their reasoning — never show it to the visitor
+        reply = re.sub(r'<think>.*?</think>', '', reply, flags=re.S).strip()
     except (AttributeError, IndexError):
         return None
     return reply or None

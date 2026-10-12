@@ -36,7 +36,7 @@ API_KEY = os.environ.get('API_KEY', '')
 # Works with any OpenAI-compatible provider (default: Groq, free tier).
 AI_API_KEY = os.environ.get('AI_API_KEY', '')
 AI_BASE_URL = os.environ.get('AI_BASE_URL', 'https://api.groq.com/openai/v1')
-AI_MODEL = os.environ.get('AI_MODEL', 'llama-3.3-70b-versatile')
+AI_MODEL = os.environ.get('AI_MODEL', 'meta-llama/llama-4-maverick-17b-128e-instruct')
 # AI replies are enabled only while no human manager has joined the session.
 AI_ENABLED = os.environ.get('AI_ENABLED', '1') not in ('0', 'false', 'False', '')
 # Company knowledge base fed to the assistant so it answers like a real employee.
