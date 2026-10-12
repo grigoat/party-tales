@@ -1752,7 +1752,6 @@ footer p { font-size: .85rem; font-weight: 300; }
   }
   .nav-links.open { right: 0; }
   .nav-toggle span { background: var(--color-text); }
-  .nav-hero:not(.scrolled) .nav-toggle span { background: #fff; }
   .nav-toggle {
     display: flex;
     z-index: 1001;
