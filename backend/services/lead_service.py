@@ -57,6 +57,7 @@ def create_lead(data: dict) -> tuple[dict | None, int | None]:
         comment=cleaned['comment'],
         page_url=cleaned['page_url'],
         language=cleaned['language'],
+        consent=data.get('consent') is True,
     )
 
     if cleaned.get('event_type') == 'Review':

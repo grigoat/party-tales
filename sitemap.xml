@@ -61,4 +61,14 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://partytales.ch/terms.html?lang=en"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://partytales.ch/terms.html"/>
   </url>
+  <url>
+    <loc>https://partytales.ch/privacy.html</loc>
+    <lastmod>2026-10-19</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://partytales.ch/privacy.html?lang=de"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://partytales.ch/privacy.html?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://partytales.ch/privacy.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://partytales.ch/privacy.html"/>
+  </url>
 </urlset>

@@ -131,6 +131,10 @@ def _format_event_date(value):
         return value
 
 
+CONSENT_YES = '<b>Согласие на обработку данных:</b> \u2705 дано'
+CONSENT_NO = '<b>Согласие на обработку данных:</b> \u26a0\ufe0f не получено'
+
+
 def format_lead(lead):
     lines = [
         f'<b>{EMOJI_BELL} Заявка #{lead["id"]}</b>',
@@ -144,6 +148,10 @@ def format_lead(lead):
         lines.append(f'<b>Дата события:</b> {escape(_format_event_date(lead["event_date"]))}')
     if lead.get('comment'):
         lines.append(f'<b>Пожелания:</b> {escape(lead["comment"])}')
+    if lead.get('consent_at'):
+        lines.append(CONSENT_YES)
+    else:
+        lines.append(CONSENT_NO)
     lines += [
         '',
         f'{EMOJI_GLOBE} Язык: {escape(lead["language"])}',

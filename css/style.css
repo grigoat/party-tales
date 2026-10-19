@@ -1591,6 +1591,39 @@ select, textarea, input { font-size: 16px !important; }
 }
 .form-error.show { display: block; }
 
+/* ── Consent checkbox (Datenschutz) ── */
+.form-group .consent-check {
+  position: relative;
+  display: flex; align-items: flex-start; gap: .75rem;
+  cursor: pointer;
+  font-size: .82rem; font-weight: 400; line-height: 1.55;
+  text-transform: none; letter-spacing: 0;
+  color: var(--color-text-secondary);
+}
+.consent-check input[type="checkbox"] {
+  position: absolute; top: 1px; left: 0;
+  width: 20px; height: 20px; margin: 0; padding: 0;
+  opacity: 0; cursor: pointer;
+}
+.consent-box {
+  flex: none;
+  width: 20px; height: 20px; margin-top: 1px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-bg);
+  transition: border-color .2s, background-color .2s, box-shadow .2s;
+  background-repeat: no-repeat; background-position: center; background-size: 12px;
+}
+.consent-check:hover .consent-box { border-color: var(--color-accent); }
+.consent-check input:focus-visible + .consent-box { box-shadow: 0 0 0 3px var(--color-accent-light); border-color: var(--color-accent); }
+.consent-check input:checked + .consent-box {
+  background-color: var(--color-accent); border-color: var(--color-accent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10'%3E%3Cpath d='M1 5l3.5 3.5L11 1.5' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+.consent-check input.error + .consent-box { border-color: #e74c3c; }
+.consent-text a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 2px; }
+.consent-text a:hover { color: var(--color-accent-hover); }
+
 /* ── Footer ── */
 footer {
   background: var(--color-bg-dark);
@@ -1628,6 +1661,13 @@ footer p { font-size: .85rem; font-weight: 300; }
 .footer-terms { margin-top:.5rem; font-size:.75rem; }
 .footer-terms-link { color: rgba(250,248,245,.6); text-decoration: underline; }
 .footer-terms-link:hover { color: var(--color-accent-light); }
+.footer-terms-sep { margin: 0 .5rem; color: rgba(250,248,245,.4); }
+@media (max-width: 600px) {
+  .footer-terms { display: flex; flex-direction: column; align-items: center; gap: .45rem; }
+  .footer-terms-sep { display: none; }
+}
+.terms-content a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 2px; }
+.terms-content strong { font-weight: 500; color: var(--color-text); }
 
 /* ── Nav contact button override ── */
 .nav-contact-btn { padding:.6rem 1.6rem; font-size:.8rem; }
@@ -2352,6 +2392,9 @@ footer p { font-size: .85rem; font-weight: 300; }
 }
 .pt-chat-name:focus { border-color: var(--color-accent); }
 .pt-chat-name[hidden] { display: none; }
+.pt-chat-privacy { margin: 0; font-size: 11px; line-height: 1.4; color: var(--color-text-muted); text-align: center; }
+.pt-chat-privacy a { color: inherit; text-decoration: underline; }
+.pt-chat-privacy a:hover { color: var(--color-accent); }
 .pt-chat-text {
   flex: 1;
   resize: none;

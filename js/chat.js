@@ -92,6 +92,7 @@
       agentName: 'Natalia',
       agentRole: 'PARTY TALES',
       namePlaceholder: 'Ihr Name (optional)',
+      privacy: 'Mit dem Senden akzeptieren Sie unsere <a href="privacy.html" target="_blank" rel="noopener">Datenschutzerklärung</a>.',
       proDefault: 'Hallo! 👋 Ich bin Natalia von PARTY TALES. Kann ich Ihnen helfen, die perfekte Dekoration für Ihr Fest zu finden?',
       proServices: 'Fragen zu unseren Paketen? 🎈 Ich helfe Ihnen gern, das Passende zu finden.',
       proGallery: 'Gefällt Ihnen, was Sie sehen? ✨ Gern erzähle ich mehr zu jedem Projekt.',
@@ -114,6 +115,7 @@
       agentName: 'Наталия',
       agentRole: 'PARTY TALES',
       namePlaceholder: 'Ваше имя (необязательно)',
+      privacy: 'Отправляя сообщение, вы соглашаетесь с <a href="privacy.html" target="_blank" rel="noopener">политикой конфиденциальности</a>.',
       proDefault: 'Здравствуйте! 👋 Меня зовут Наталия, студия PARTY TALES. Помочь подобрать оформление для вашего праздника?',
       proServices: 'Есть вопросы по нашим пакетам? 🎈 С радостью помогу выбрать подходящий.',
       proGallery: 'Нравится то, что видите? ✨ Расскажу подробнее о любом проекте.',
@@ -136,6 +138,7 @@
       agentName: 'Natalia',
       agentRole: 'PARTY TALES',
       namePlaceholder: 'Your name (optional)',
+      privacy: 'By sending a message you accept our <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.',
       proDefault: "Hi! 👋 I'm Natalia from PARTY TALES. Can I help you find the perfect decor for your celebration?",
       proServices: 'Questions about our packages? 🎈 Happy to help you pick the right one.',
       proGallery: 'Like what you see? ✨ I can tell you more about any project.',
@@ -208,6 +211,7 @@
             '<textarea class="pt-chat-text" rows="1" placeholder="' + t('placeholder') + '" maxlength="2000"></textarea>' +
             '<button class="pt-chat-send" type="submit" aria-label="' + t('send') + '">' + svgSend() + '</button>' +
           '</div>' +
+          '<p class="pt-chat-privacy">' + t('privacy') + '</p>' +
         '</form>' +
       '</div>';
     document.body.appendChild(root);
@@ -721,6 +725,8 @@
     els.statusText.textContent = t('subOnline');
     els.text.placeholder = t('placeholder');
     els.name.placeholder = t('namePlaceholder');
+    var priv = els.root.querySelector('.pt-chat-privacy');
+    if (priv) priv.innerHTML = t('privacy');
     els.fab.setAttribute('aria-label', t('open'));
     els.close.setAttribute('aria-label', t('close'));
     els.send.setAttribute('aria-label', t('send'));

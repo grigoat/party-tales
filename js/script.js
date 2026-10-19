@@ -1210,6 +1210,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var nameError = document.getElementById('nameError');
     var phoneError = document.getElementById('phoneError');
     var dateError = document.getElementById('dateError');
+    var consentInput = document.getElementById('formConsent');
+    var consentError = document.getElementById('consentError');
     // ── Поле даты: маска ДД.ММ.ГГГГ + собственный календарь ──
     // Нативный input[type=date] заменён: его посегментная маска с системным
     // выделением неудобна и выглядит по-разному в браузерах и локалях
@@ -1474,6 +1476,20 @@ document.addEventListener('DOMContentLoaded', function() {
       return false;
     }
 
+    // Согласие на обработку персональных данных — обязательно
+    function validateConsent() {
+      if (!consentInput) return true;
+      var ok = consentInput.checked;
+      consentInput.classList.toggle('error', !ok);
+      if (consentError) consentError.classList.toggle('show', !ok);
+      return ok;
+    }
+    if (consentInput) {
+      consentInput.addEventListener('change', function() {
+        if (consentInput.checked) validateConsent();
+      });
+    }
+
     nameInput.addEventListener('input', function() {
       nameInput.classList.remove('error');
       nameError.classList.remove('show');
@@ -1550,11 +1566,12 @@ document.addEventListener('DOMContentLoaded', function() {
       var fields = [
         { el: nameInput, valid: validateName },
         { el: phoneInput, valid: validatePhone },
-        { el: dateInput, valid: validateDate }
+        { el: dateInput, valid: validateDate },
+        { el: consentInput, valid: validateConsent }
       ];
       for (var i = 0; i < fields.length; i++) {
         var f = fields[i];
-        if (!f.valid()) {
+        if (f.el && !f.valid()) {
           f.el.focus();
           f.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
           return;
@@ -1567,7 +1584,8 @@ document.addEventListener('DOMContentLoaded', function() {
       var isNameValid = validateName();
       var isPhoneValid = validatePhone();
       var isDateValid = validateDate();
-      if (!isNameValid || !isPhoneValid || !isDateValid) {
+      var isConsentValid = validateConsent();
+      if (!isNameValid || !isPhoneValid || !isDateValid || !isConsentValid) {
         focusFirstError();
         return;
       }
@@ -1585,6 +1603,7 @@ document.addEventListener('DOMContentLoaded', function() {
           return d ? dateToISO(d) : '';
         })(),
         comment: commentInput.value.trim(),
+        consent: !!(consentInput && consentInput.checked),
         page_url: window.location.href,
         language: typeof currentLang !== 'undefined' ? currentLang : 'de'
       };
@@ -1719,6 +1738,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('reviewText').addEventListener('input', function() {
       this.classList.remove('error');
     });
+    var reviewConsentEl = document.getElementById('reviewConsent');
+    if (reviewConsentEl) reviewConsentEl.addEventListener('change', function() {
+      if (!this.checked) return;
+      this.classList.remove('error');
+      var er = document.getElementById('reviewConsentError');
+      if (er) er.classList.remove('show');
+    });
 
     reviewForm.addEventListener('submit', function(e) {
       e.preventDefault();
@@ -1727,9 +1753,14 @@ document.addEventListener('DOMContentLoaded', function() {
       var name = nameInput.value.trim();
       var text = textInput.value.trim();
       var rating = reviewRating.value;
+      var consentInput = document.getElementById('reviewConsent');
+      var consentErr = document.getElementById('reviewConsentError');
+      var consentOk = !consentInput || consentInput.checked;
       nameInput.classList.toggle('error', !name);
       textInput.classList.toggle('error', !text);
-      if (!name || !text) return;
+      if (consentInput) consentInput.classList.toggle('error', !consentOk);
+      if (consentErr) consentErr.classList.toggle('show', !consentOk);
+      if (!name || !text || !consentOk) return;
       nameInput.classList.remove('error');
       textInput.classList.remove('error');
       var backendUrl = (typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'http://localhost:5000') + '/api/lead';
@@ -1760,6 +1791,7 @@ document.addEventListener('DOMContentLoaded', function() {
         country: '',
         event_type: 'Review',
         comment: 'Rating: ' + rating + '/5\n\n' + text,
+        consent: true,
         page_url: window.location.href,
         language: typeof currentLang !== 'undefined' ? currentLang : 'de'
       }));
