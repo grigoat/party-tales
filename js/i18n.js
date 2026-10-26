@@ -1,5 +1,12 @@
 var translations = {
   de: {
+    "index.facts.area.title": "Zug · Schwyz · Luzern · Zürich",
+    "index.facts.area.desc": "und die ganze Schweiz",
+    "index.facts.delivery.title": "Gratis-Lieferung",
+    "index.facts.delivery.desc": "ab 100 CHF, 20 km um Zug",
+    "index.facts.hours.title": "Täglich 10–21 Uhr",
+    "index.facts.hours.desc": "Montag bis Sonntag",
+    "contacts.address.value": "Zug, Schweiz",
     "nav.home": "Startseite",
     "nav.about": "Über uns",
     "nav.services": "Leistungen",
@@ -370,6 +377,13 @@ var translations = {
   },
 
   ru: {
+    "index.facts.area.title": "Цуг · Швиц · Люцерн · Цюрих",
+    "index.facts.area.desc": "и вся Швейцария",
+    "index.facts.delivery.title": "Бесплатная доставка",
+    "index.facts.delivery.desc": "от 100 CHF, 20 км от Цуга",
+    "index.facts.hours.title": "Ежедневно 10–21",
+    "index.facts.hours.desc": "с понедельника по воскресенье",
+    "contacts.address.value": "Цуг, Швейцария",
     "nav.home": "Главная",
     "nav.about": "О нас",
     "nav.services": "Услуги",
@@ -740,6 +754,13 @@ var translations = {
   },
 
   en: {
+    "index.facts.area.title": "Zug · Schwyz · Lucerne · Zurich",
+    "index.facts.area.desc": "and all of Switzerland",
+    "index.facts.delivery.title": "Free delivery",
+    "index.facts.delivery.desc": "from 100 CHF, within 20 km of Zug",
+    "index.facts.hours.title": "Daily 10am–9pm",
+    "index.facts.hours.desc": "Monday to Sunday",
+    "contacts.address.value": "Zug, Switzerland",
     "nav.home": "Home",
     "nav.about": "About",
     "nav.services": "Services",

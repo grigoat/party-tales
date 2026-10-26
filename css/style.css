@@ -15,7 +15,7 @@
   --color-success: #4A9D7A;
 
   --font-sans: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-serif: Georgia, 'Times New Roman', serif;
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
   /* Elegant display serif for accent words & quotes (wide, refined, has Cyrillic) */
   --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
 
@@ -118,7 +118,7 @@ body {
   position: relative;
   overflow-x: clip;
 }
-h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; }
+h1, h2, h3, h4 { font-family: var(--font-sans); font-weight: 600; letter-spacing: -0.01em; }
 img { max-width: 100%; display: block; }
 a { text-decoration: none; color: inherit; }
 
@@ -849,7 +849,7 @@ section { padding: clamp(3rem, 6vw, 6rem) clamp(1.5rem, 4vw, 3rem); }
   color: var(--color-accent);
 }
 .service-price {
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--font-display);
   font-size: clamp(1.1rem, 2.5vw, 1.4rem);
   color: var(--color-accent);
   font-weight: 700;
@@ -940,7 +940,7 @@ section { padding: clamp(3rem, 6vw, 6rem) clamp(1.5rem, 4vw, 3rem); }
 }
 .service-image-price {
   display: inline-block;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--font-display);
   font-size: 1rem;
   color: var(--color-accent);
   font-weight: 600;
@@ -2839,3 +2839,148 @@ footer p { font-size: .85rem; font-weight: 300; }
 .dp-day.is-today { box-shadow: inset 0 0 0 1.5px var(--color-accent); }
 .dp-day.is-selected { background: var(--color-accent); color: #fff; }
 .dp-day.is-selected:hover:not(:disabled) { background: var(--color-accent-hover); }
+
+/* ═══════════════════════════════════════════════════════════════
+   Design polish · October 2026
+   Fixes from the design audit: contrast, one type system, even grids.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Accent words: light pink was made for the dark hero — on light
+   sections it nearly vanished. Darker pink everywhere, light only on dark. */
+.hero-emphasis { color: var(--color-accent-hover); }
+.hero .hero-emphasis,
+#cta-final .hero-emphasis { color: var(--color-accent-light); }
+
+/* Calmer line breaks: no lone words, balanced headings */
+h1, h2, h3, .section-title { text-wrap: balance; }
+p, .section-desc { text-wrap: pretty; }
+
+/* Small caps labels — readable minimum 12px */
+.section-label, .page-hero-eyebrow, .hero-eyebrow { font-size: .75rem; }
+
+/* Home · experience: headings and texts start on the same line in every column */
+.experience-grid { grid-template-rows: auto auto auto; row-gap: 0; }
+.experience-item { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: 0; }
+.experience-item h3 { align-self: end; }
+
+/* Home · services preview: the small caption repeated the title */
+.service-preview-tag { display: none; }
+
+/* Home · steps: quiet numerals instead of pink circles */
+.how-step-num {
+  width: auto; height: auto;
+  background: none;
+  border-radius: 0;
+  justify-content: flex-start;
+  font-size: 2.4rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--color-accent);
+  margin-bottom: 1.4rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+  width: 100%;
+}
+.how-step { box-shadow: none; }
+
+/* Home · gallery preview: even grid instead of uneven masonry */
+#gallery .gallery-grid {
+  column-count: auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+#gallery .gallery-item { margin: 0; aspect-ratio: 4 / 5; }
+#gallery .gallery-item picture,
+#gallery .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+@media (max-width: 1023px) {
+  #gallery .gallery-grid { grid-template-columns: repeat(3, 1fr); gap: .8rem; }
+}
+@media (max-width: 767px) {
+  #gallery .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: .6rem; }
+}
+
+/* Coverage strip under the home hero (new) */
+.facts-strip {
+  border-bottom: 1px solid var(--color-border);
+  padding: 1.4rem clamp(1.5rem, 4vw, 3rem);
+}
+.facts-strip ul {
+  list-style: none;
+  max-width: 1000px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+.facts-strip li {
+  text-align: center;
+  font-size: .85rem;
+  color: var(--color-text-secondary);
+  letter-spacing: .01em;
+}
+.facts-strip li + li { border-left: 1px solid var(--color-border); }
+.facts-strip strong { display: block; color: var(--color-text); font-weight: 600; font-size: .95rem; margin-bottom: .15rem; }
+@media (max-width: 767px) {
+  .facts-strip { padding: 1rem; }
+  .facts-strip li { font-size: .75rem; padding: 0 .4rem; }
+  .facts-strip strong { font-size: .85rem; }
+}
+
+/* Services · 9 cards: centred rows (no orphan card stuck on the left),
+   titles aligned at the top, buttons aligned at the bottom */
+.services-grid-squares {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+}
+.services-grid-squares > * { flex: 0 0 calc((100% - 3 * 1.5rem) / 4); min-width: 0; }
+.service-card-front { flex: none; justify-content: flex-start; }
+.service-card-back { flex: 1; }
+.service-card-back .btn { margin-top: auto; }
+@media (max-width: 1023px) {
+  .services-grid-squares { gap: 1rem; }
+  .services-grid-squares > * { flex-basis: calc((100% - 1rem) / 2); }
+}
+
+/* About · principles: line icons in the same style as the rest of the site */
+.value-icon svg { width: 100%; height: 100%; }
+.value-card h3 { font-size: 1.05rem; }
+
+/* Contacts · social icons were centred by a later rule under a left label */
+.social-links.social-links--start { justify-content: flex-start; margin: 0; }
+
+/* Contacts · event type select looks like the other fields */
+.contact-form select:not(.phone-row select) {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.6rem;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23999' d='M1.41.59 6 5.17 10.59.59 12 2 6 8 0 2z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1.2rem center;
+  background-size: 10px;
+}
+
+/* Touch targets on phones */
+@media (max-width: 767px) {
+  .filter-btn { font-size: .8rem; padding: .55rem 1rem; min-height: 40px; }
+  .gallery-filters { gap: .4rem; }
+  .footer-terms-link { display: inline-block; padding: .5rem .25rem; }
+  .testimonials-google { padding: .6rem 0; }
+  .gallery-item-label, .gallery-overlay-label { font-size: .75rem; }
+  .service-preview-cta { font-size: .75rem; }
+}
+.how-step-num { font-family: var(--font-sans); font-weight: 300; letter-spacing: -0.02em; font-variant-numeric: lining-nums tabular-nums; }
+.experience-grid { max-width: 1100px; }
+.experience-item { padding-left: .5rem; padding-right: .5rem; }
+h3, h4 { letter-spacing: 0; }
+body { font-variant-numeric: lining-nums; }
+@media (max-width: 767px) {
+  .facts-strip { padding: .4rem 1.25rem; }
+  .facts-strip ul { grid-template-columns: 1fr; }
+  .facts-strip li { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: .7rem 0; text-align: left; }
+  .facts-strip li + li { border-left: 0; border-top: 1px solid var(--color-border); }
+  .facts-strip strong { margin: 0; }
+  .facts-strip span { text-align: right; }
+}
