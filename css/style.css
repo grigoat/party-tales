@@ -2984,3 +2984,70 @@ body { font-variant-numeric: lining-nums; }
   .facts-strip strong { margin: 0; }
   .facts-strip span { text-align: right; }
 }
+
+/* ===== Client update · November 2026 ===== */
+/* Footer logo: cropped file (no transparent padding), larger */
+footer .logo img { height: 120px; width: auto; }
+@media (max-width: 767px) { footer .logo img { height: 96px; } }
+@media (max-width: 374px) { footer .logo img { height: 84px; } }
+
+/* Service card → gallery with filter */
+.service-gallery-link {
+  align-self: center;
+  font-size: .8rem;
+  color: var(--color-accent-hover);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding: .2rem 0;
+  transition: border-color .2s, color .2s;
+}
+.service-gallery-link:hover { color: var(--color-text); border-bottom-color: currentColor; }
+.service-card-back .btn { margin-top: auto; }
+
+/* Prices */
+.prices-section { background: var(--color-bg-alt); }
+.price-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+}
+.price-card {
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 1.75rem 1.75rem 1.5rem;
+  text-align: left;
+}
+.price-card h3 { font-size: 1.1rem; margin: 0 0 1rem; line-height: 1.3; }
+.price-sub {
+  font-size: var(--text-xs);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: .9rem 0 .2rem;
+}
+.price-card h3 + .price-sub { margin-top: 0; }
+.price-list { list-style: none; margin: 0; padding: 0; }
+.price-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: .55rem 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: .9rem;
+  color: var(--color-text-secondary);
+}
+.price-list li:last-child { border-bottom: 0; }
+.price-list b {
+  font-weight: 600;
+  color: var(--color-accent-hover);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 1023px) { .price-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+  .price-grid { grid-template-columns: 1fr; gap: 1rem; }
+  .price-card { padding: 1.4rem 1.25rem 1.1rem; }
+}
