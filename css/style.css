@@ -3073,29 +3073,6 @@ body.christmas-mode::before {
   to { background-position: 0 210px, 50px 390px, 20px 180px; }
 }
 
-/* A fine evergreen strand with warm lights along the navigation edge. */
-body.christmas-mode nav::after {
-  content: "";
-  position: absolute;
-  left: max(1rem, 4vw);
-  right: max(1rem, 4vw);
-  bottom: -2px;
-  height: 12px;
-  pointer-events: none;
-  opacity: .78;
-  background:
-    radial-gradient(circle at 8% 45%, #f0d39a 0 2px, transparent 3px),
-    radial-gradient(circle at 28% 62%, #a83f4c 0 2px, transparent 3px),
-    radial-gradient(circle at 50% 38%, #f0d39a 0 2px, transparent 3px),
-    radial-gradient(circle at 72% 63%, #a83f4c 0 2px, transparent 3px),
-    radial-gradient(circle at 92% 42%, #f0d39a 0 2px, transparent 3px),
-    linear-gradient(176deg, transparent 43%, rgba(38,91,67,.78) 46% 53%, transparent 56%);
-  background-repeat: no-repeat;
-}
-body.christmas-mode nav.nav-hero:not(.scrolled)::after {
-  filter: brightness(1.45);
-}
-
 /* Champagne gold on the home hero; cranberry and evergreen on inner pages. */
 body.christmas-mode .hero .hero-emphasis,
 body.christmas-mode #cta-final .hero-emphasis {
@@ -3123,13 +3100,6 @@ body.christmas-mode :focus-visible { outline-color: #9a4652; }
 
 @media (max-width: 767px) {
   body.christmas-mode::before { opacity: .16; }
-  body.christmas-mode nav::after {
-    left: 1rem;
-    right: 1rem;
-    height: 9px;
-    opacity: .7;
-    background-size: auto;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   body.christmas-mode::before { animation: none; }
