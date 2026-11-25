@@ -700,6 +700,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (dim) {
         img.width = dim[0]; img.height = dim[1];
         item.style.aspectRatio = dim[0] + ' / ' + dim[1];
+        item.setAttribute('data-ar', dim[0] / dim[1]);
       }
       img.decoding = 'async';
       var shown = false;
@@ -712,6 +713,8 @@ document.addEventListener('DOMContentLoaded', function() {
         item.classList.remove('gallery-error');
         if (!dim && this.naturalWidth && this.naturalHeight) {
           item.style.aspectRatio = this.naturalWidth + ' / ' + this.naturalHeight;
+          item.setAttribute('data-ar', this.naturalWidth / this.naturalHeight);
+          scheduleGalleryLayout();
         }
         // decode() — чтобы фото появлялось целиком, а не прорисовывалось по кускам
         if (img.decode) img.decode().then(show, show); else show();
@@ -784,6 +787,42 @@ document.addEventListener('DOMContentLoaded', function() {
       return item;
     }
 
+
+    // Раскладка «по рядам»: фото идут слева направо (1-й ряд = первые фото),
+    // каждое следующее встаёт в самый короткий столбец. Порядок в DOM не меняется,
+    // поэтому лайтбокс и фильтры работают как раньше. Число столбцов и отступ
+    // берутся из CSS (column-count / column-gap на .gallery-grid).
+    function layoutGallery() {
+      var cs = getComputedStyle(galleryGrid);
+      var cols = parseInt(cs.columnCount, 10) || 4;
+      var gap = parseFloat(cs.columnGap) || 16;
+      var W = galleryGrid.clientWidth;
+      if (!W) return;
+      var cw = (W - gap * (cols - 1)) / cols;
+      var heights = [];
+      for (var c = 0; c < cols; c++) heights.push(0);
+      galleryGrid.classList.add('is-rows');
+      galleryGrid.querySelectorAll('.gallery-item').forEach(function(item) {
+        if (item.classList.contains('hidden')) return;
+        var ar = parseFloat(item.getAttribute('data-ar')) || 0.75;
+        var h = Math.round(cw / ar);
+        var col = 0;
+        for (var k = 1; k < cols; k++) if (heights[k] < heights[col] - 1) col = k;
+        item.style.width = cw + 'px';
+        item.style.height = h + 'px';
+        item.style.left = (col * (cw + gap)) + 'px';
+        item.style.top = heights[col] + 'px';
+        heights[col] += h + gap;
+      });
+      galleryGrid.style.height = Math.max(0, Math.max.apply(null, heights) - gap) + 'px';
+    }
+    var galleryLayoutRaf = 0;
+    function scheduleGalleryLayout() {
+      cancelAnimationFrame(galleryLayoutRaf);
+      galleryLayoutRaf = requestAnimationFrame(layoutGallery);
+    }
+    window.addEventListener('resize', scheduleGalleryLayout);
+
     var fragment = document.createDocumentFragment();
     var totalGalleryItems = galleryFiles.length;
     for (var i = 0; i < galleryFiles.length; i++) {
@@ -791,6 +830,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     // В галерее только фото (ноябрь 2026): ролики остаются фоном хиро на главной.
     galleryGrid.appendChild(fragment);
+    layoutGallery();
 
     // Force hide any ongoing loader after max timeout
     setTimeout(function() {
@@ -822,6 +862,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var cats = (item.getAttribute('data-category') || '').split(' ');
       item.classList.toggle('hidden', !(filter === 'all' || cats.indexOf(filter) !== -1));
     });
+    if (typeof scheduleGalleryLayout === 'function') scheduleGalleryLayout();
   }
 
   if (galleryFilters && galleryGrid) {

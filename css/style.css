@@ -3240,3 +3240,7 @@ html.lb-vt #navbar, html.lb-vt .pt-chat, html.lb-vt .back-to-top { view-transiti
 @media (prefers-reduced-motion: reduce) {
   @view-transition { navigation: none; }
 }
+
+/* Gallery laid out in rows (left → right), positions set by JS (layoutGallery) */
+#galleryGrid.is-rows { position: relative; }
+#galleryGrid.is-rows .gallery-item { position: absolute; margin: 0; }
