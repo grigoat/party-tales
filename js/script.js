@@ -792,8 +792,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // каждое следующее встаёт в самый короткий столбец. Порядок в DOM не меняется,
     // поэтому лайтбокс и фильтры работают как раньше. Число столбцов и отступ
     // берутся из CSS (column-count / column-gap на .gallery-grid).
+    // Невидимый «щуп» с классом .gallery-grid: по нему читаем число столбцов
+    // и отступ из CSS (медиазапросы), а сама сетка — без CSS-колонок,
+    // иначе Firefox неправильно позиционирует фото.
+    var galleryProbe = document.createElement('div');
+    galleryProbe.className = 'gallery-grid';
+    galleryProbe.setAttribute('aria-hidden', 'true');
+    galleryProbe.style.cssText = 'position:absolute;visibility:hidden;height:0;margin:0;padding:0;pointer-events:none';
+    galleryGrid.parentNode.insertBefore(galleryProbe, galleryGrid);
     function layoutGallery() {
-      var cs = getComputedStyle(galleryGrid);
+      var cs = getComputedStyle(galleryProbe);
       var cols = parseInt(cs.columnCount, 10) || 4;
       var gap = parseFloat(cs.columnGap) || 16;
       var W = galleryGrid.clientWidth;

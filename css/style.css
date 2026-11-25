@@ -3242,5 +3242,5 @@ html.lb-vt #navbar, html.lb-vt .pt-chat, html.lb-vt .back-to-top { view-transiti
 }
 
 /* Gallery laid out in rows (left → right), positions set by JS (layoutGallery) */
-#galleryGrid.is-rows { position: relative; }
+#galleryGrid.is-rows { position: relative; column-count: auto; columns: auto; }
 #galleryGrid.is-rows .gallery-item { position: absolute; margin: 0; }
