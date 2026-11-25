@@ -34,15 +34,22 @@
         '<stop offset="0" stop-color="' + p[0] + '"/>' +
         '<stop offset=".55" stop-color="' + p[1] + '"/>' +
         '<stop offset="1" stop-color="' + p[2] + '"/></radialGradient>';
-      var cy = b.len + b.r * 1.15, ry = b.r * 1.15;
-      body += '<g class="ny-balloon" style="--d:' + (i * 0.7) + 's;--o:' + b.x + 'px 0">' +
-        '<path d="M' + b.x + ' 0 C ' + (b.x + 4) + ' ' + (b.len * 0.35) + ' ' + (b.x - 4) + ' ' + (b.len * 0.7) + ' ' + b.x + ' ' + b.len + '" stroke="#d9b46a" stroke-width="1" fill="none" opacity=".75"/>' +
-        '<ellipse cx="' + b.x + '" cy="' + cy + '" rx="' + b.r + '" ry="' + ry + '" fill="url(#' + id + ')"/>' +
-        '<ellipse cx="' + (b.x - b.r * 0.38) + '" cy="' + (cy - ry * 0.42) + '" rx="' + (b.r * 0.2) + '" ry="' + (b.r * 0.32) + '" fill="#fff" opacity=".55" transform="rotate(-24 ' + (b.x - b.r * 0.38) + ' ' + (cy - ry * 0.42) + ')"/>' +
-        '<path d="M' + (b.x - 4) + ' ' + (cy + ry + 4) + ' L' + b.x + ' ' + (cy + ry - 1) + ' L' + (b.x + 4) + ' ' + (cy + ry + 4) + ' Z" fill="' + p[2] + '"/>' +
+      // Hanging balloon: the string ends at the knot on TOP, the round body hangs below
+      var x = b.x, r = b.r, ry = b.r * 1.15, k = b.len, t = k + 6, H = ry * 1.95;
+      var shape = 'M' + x + ' ' + t +
+        ' C ' + (x + r * 0.62) + ' ' + t + ' ' + (x + r) + ' ' + (t + H * 0.22) + ' ' + (x + r) + ' ' + (t + H * 0.55) +
+        ' C ' + (x + r) + ' ' + (t + H * 0.82) + ' ' + (x + r * 0.55) + ' ' + (t + H) + ' ' + x + ' ' + (t + H) +
+        ' C ' + (x - r * 0.55) + ' ' + (t + H) + ' ' + (x - r) + ' ' + (t + H * 0.82) + ' ' + (x - r) + ' ' + (t + H * 0.55) +
+        ' C ' + (x - r) + ' ' + (t + H * 0.22) + ' ' + (x - r * 0.62) + ' ' + t + ' ' + x + ' ' + t + ' Z';
+      var hx = x - r * 0.42, hy = t + H * 0.42;
+      body += '<g class="ny-balloon" style="--d:' + (i * 0.7) + 's;--o:' + x + 'px 0">' +
+        '<path d="M' + x + ' 0 C ' + (x + 4) + ' ' + (k * 0.35) + ' ' + (x - 4) + ' ' + (k * 0.7) + ' ' + x + ' ' + k + '" stroke="#d9b46a" stroke-width="1" fill="none" opacity=".75"/>' +
+        '<path d="' + shape + '" fill="url(#' + id + ')"/>' +
+        '<ellipse cx="' + hx + '" cy="' + hy + '" rx="' + (r * 0.18) + '" ry="' + (r * 0.34) + '" fill="#fff" opacity=".5" transform="rotate(18 ' + hx + ' ' + hy + ')"/>' +
+        '<path d="M' + (x - 1.6) + ' ' + (t + 1) + ' L' + (x - 3.6) + ' ' + k + ' L' + (x + 3.6) + ' ' + k + ' L' + (x + 1.6) + ' ' + (t + 1) + ' Z" fill="' + p[2] + '"/>' +
         '</g>';
     });
-    return '<svg viewBox="0 0 190 230" aria-hidden="true" focusable="false"><defs>' + defs + '</defs>' + body + '</svg>';
+    return '<svg viewBox="0 0 190 220" aria-hidden="true" focusable="false"><defs>' + defs + '</defs>' + body + '</svg>';
   }
 
   function addGarlands(host) {
