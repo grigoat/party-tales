@@ -461,8 +461,178 @@ document.addEventListener('DOMContentLoaded', function() {
       'video-12-04-23-07-55.mp4',
       'video-12-04-23-08-22.mp4'
     ];
+  // Размеры фото (ширина, высота) — чтобы сетка не прыгала, пока фото грузятся.
+  // При добавлении фото дописать сюда (иначе размер подхватится после загрузки).
+  var galleryDims = {
+    'ny-ba15b865-f12d-46cc-a1fe-ffc3fbe46173.webp': [960, 1200],
+    'ny-img_4770.webp': [978, 1200],
+    'ny-img_5360.webp': [900, 1200],
+    'ny-img_5843.webp': [900, 1200],
+    'ny-img_5859.webp': [900, 1200],
+    'ny-img_7339.webp': [900, 1200],
+    'ny-img_7346.webp': [900, 1200],
+    'ny-img_7357.webp': [900, 1200],
+    'ny-img_7364.webp': [900, 1200],
+    'ny-img_7387.webp': [900, 1200],
+    'ny-img_7392.webp': [900, 1200],
+    'ny-img_7487.webp': [900, 1200],
+    'ny-img_7492.webp': [900, 1200],
+    'ny-img_7512.webp': [900, 1200],
+    'ny-img_7542.webp': [900, 1200],
+    'ny-img_7585.webp': [900, 1200],
+    'ny-img_7590.webp': [900, 1200],
+    'ny-img_7616.webp': [900, 1200],
+    'ny-img_7662.webp': [900, 1200],
+    'ny-img_7678.webp': [900, 1200],
+    'ny-img_7801.webp': [900, 1200],
+    'ny-img_7822.webp': [900, 1200],
+    'ny-img_7832.webp': [900, 1200],
+    'ny-img_7942.webp': [900, 1200],
+    'ny-img_7955.webp': [900, 1200],
+    'ny-img_7972.webp': [900, 1200],
+    'ny-img_7994.webp': [900, 1200],
+    'ny-img_8011.webp': [900, 1200],
+    'ny-img_8026.webp': [900, 1200],
+    'ny-img_8034.webp': [900, 1200],
+    'ny-img_8197.webp': [900, 1200],
+    'ny-img_8208.webp': [900, 1200],
+    'fz-20260605_231713.webp': [900, 1200],
+    'fz-20260619_230811.webp': [900, 1200],
+    'fz-20260606_184226.webp': [900, 1200],
+    '0523BDD4-D1CF-4375-8A27-1834ED5CAF10.webp': [900, 1200],
+    '0744315C-D24A-4CD5-A0E8-C6AB50BDE2DF.webp': [900, 1200],
+    '0E76160B-8854-42E9-8C8C-C932ED7D3C13.webp': [900, 1200],
+    '0EBCCFE4-A374-4A86-A12B-D27AB0D7AB25.webp': [899, 1200],
+    '0EEFBED7-9C4C-42AD-9929-FBDDA1B4E922.webp': [900, 1200],
+    '10683988-A7C2-4015-8159-FF938A2B340D.webp': [900, 1200],
+    '16BAD5C4-CE91-4D71-A394-E6C71FB17CD6.webp': [900, 1200],
+    '1D000A45-A36B-4782-B98B-05DE6AFB8DE3.webp': [900, 1200],
+    '1E27F947-3ACE-4AED-95F1-0F79F644C986.webp': [899, 1200],
+    '1E3726E7-10B3-4F9C-9257-937441014F1A.webp': [900, 1200],
+    '208F1AD7-58E0-49C3-B35F-AF49FC3F0CDE.webp': [900, 1200],
+    '21465F3E-B8DF-4ACA-A46F-EF060191EE85.webp': [900, 1200],
+    '24863E95-84B8-40DA-A0A6-3CB066178DD8.webp': [900, 1200],
+    '282E51EC-F8E9-4A37-BCF6-3132C52C6751.webp': [900, 1200],
+    '29FA9E86-1BCF-4735-BF99-2AA5FFF63101.webp': [674, 1200],
+    '2B52658A-34D4-4417-A05D-F83E408AB928.webp': [900, 1200],
+    '2B6D9516-8D01-4752-9111-9462F5E79D5D.webp': [899, 1200],
+    '2FFB3D60-CBD3-4BD8-A61B-E8768BE4FED2.webp': [900, 1200],
+    '30A56E4A-C85C-45FA-87DD-B559A675CD9E.webp': [900, 1200],
+    '33C3260E-B226-4CBF-9FB0-89D8FF178DD2.webp': [900, 1200],
+    '34CBEE1B-8ED4-42F2-A0E9-E3FFAF9B80DA.webp': [900, 1200],
+    '37E8A320-6067-4E0C-AFF3-595C9450B5E0.webp': [884, 1200],
+    '3821E836-1B0D-4E1F-9D6D-063025C4A66A.webp': [900, 1200],
+    '399CCB98-0581-49EB-A7DD-A7FE165723B1.webp': [899, 1200],
+    '39C517C5-6E19-43AA-8E4D-E81EDE40F6C8.webp': [900, 1200],
+    '3A39B971-451C-4384-9353-C0F2F0AC7C7B.webp': [900, 1200],
+    '3D4F81B9-B847-4A72-BE04-AD67736F24F6.webp': [899, 1200],
+    '3DDE2D6F-5FA3-43C8-91D0-27C34C5CDA67.webp': [900, 1200],
+    '40AC94F3-CAD7-426E-BA70-4D1D0B722816.webp': [900, 1200],
+    '415713E8-4066-408C-8EC5-8E84C971979F.webp': [900, 1200],
+    '432B792D-F136-40C8-8BEB-1EBD7789CD54.webp': [899, 1200],
+    '44E7BF22-6F3B-4A30-BA4B-FD6E3C157391.webp': [899, 1200],
+    '470600E3-4507-4559-95A7-33D06D4F678B.webp': [900, 1200],
+    '49078041-1180-4016-A797-9E0214568883.webp': [900, 1200],
+    '4ABFCC78-00B7-41CB-9252-FF730B000661.webp': [899, 1200],
+    '4DFA88B4-C603-4602-AD60-60E44F8973F1.webp': [900, 1200],
+    '5128310E-B59A-4B19-BEB9-3244302D5484.webp': [900, 1200],
+    '57B7DF0F-2E0E-4CCE-B98B-23BA73EDBCBA.webp': [900, 1200],
+    '62BF8D5F-8ED9-43F7-8129-024B8521CE21.webp': [900, 1200],
+    '6585A8CF-33E7-4921-BE9D-0DFBF36226AB.webp': [900, 1200],
+    '66152DB4-1C74-44A0-87D7-0CC4A5BC44F8.webp': [900, 1200],
+    '66E98D96-3E08-4E61-8BA2-1D0DA3902FA2.webp': [900, 1200],
+    '6789E071-B745-451E-A49F-99DDE287E6AB.webp': [899, 1200],
+    '68C9400B-36B8-43DF-91A3-E641E7B0F204.webp': [900, 1200],
+    '705A64C3-5D03-47EE-A85D-0C0FFEB8A57B.webp': [900, 1200],
+    '70B3D870-844F-41C9-A46D-CF9E30828E13.webp': [900, 1200],
+    '72C46CE7-649C-4CEB-8B3D-CEFA354FEF2F.webp': [900, 1200],
+    '731DF57B-C138-49B3-8BAD-0132EEA9AB9B.webp': [899, 1200],
+    '73758C5E-6743-4ADB-ABC0-314E4A79272B.webp': [900, 1200],
+    '747EFCA5-6C42-48E5-9FBE-13A7CEA9B9F6.webp': [899, 1200],
+    '777D44CF-EA4C-4150-85C1-71B348DB9047.webp': [900, 1200],
+    '78FEB6E2-9B9E-492D-9AEF-184E808A633D.webp': [900, 1200],
+    '7A45C820-B917-499E-B508-0C30F75B5BDA.webp': [900, 1200],
+    '7A592DEC-ADCB-4D9E-92CF-418A17C63396.webp': [900, 1200],
+    '7AF28D08-2EA4-4C12-9197-EC1882526869.webp': [900, 1200],
+    '7D6B9EF6-0430-4858-AD99-F813E4EFAFEB.webp': [900, 1200],
+    '7FA6641E-D8BC-4EED-A4DB-5ED5B55386EE.webp': [900, 1200],
+    '816E6CD6-116E-45EF-ACBC-549943122F11.webp': [900, 1200],
+    '8424640A-0452-49B0-8FDF-0C0DF825D766.webp': [899, 1200],
+    '8502B469-B1E0-4812-8EA2-1048C6B90876.webp': [900, 1200],
+    '870D9268-FDAD-4A6A-81DB-657438266334.webp': [900, 1200],
+    '87111272-3F8D-4E5C-B2C3-66C3C9529206.webp': [900, 1200],
+    '87ABDD10-B02F-4A47-8A7D-143C88016055.webp': [900, 1200],
+    '89FCB87D-D0E9-4531-A725-0AE88F4D2B57.webp': [900, 1200],
+    '8AD140B4-3256-4A54-BA15-81B4DC048BAF.webp': [997, 1200],
+    '8DC9E238-B8C1-45CC-A7E3-7BBB0B9B421E.webp': [899, 1200],
+    '9080B576-6EDF-45E9-833B-AE65672CE867.webp': [900, 1200],
+    '943A21B1-75DF-43C1-88F2-DDC317DD98A4.webp': [900, 1200],
+    '9583779D-08C4-439A-9895-2E4E7C3F4118.webp': [900, 1200],
+    '95C17BB3-C25A-48C9-8308-520407A81C8E.webp': [899, 1200],
+    '96DC5D75-13BE-41C2-AFE0-7154F55A189D.webp': [900, 1200],
+    '9AC9DEEB-DEB5-4657-8600-870814BD5532.webp': [900, 1200],
+    '9AEC9186-6A3D-42C7-B9E9-BD9A4FC474A2.webp': [900, 1200],
+    '9C72CDCE-7539-4146-8CF4-78E1D57C8BB7.webp': [900, 1200],
+    'A1E09A60-71C6-41E3-A140-185DB389ECAB.webp': [900, 1200],
+    'A48F492F-05CF-41C9-857F-A4F6E4CF2900.webp': [900, 1200],
+    'A615A628-87E2-4DB3-8695-D671143AAB5B.webp': [900, 1200],
+    'A9F4A531-555F-4F3C-B7FD-A138D7A3E68A.webp': [900, 1200],
+    'ADB9946F-4C64-4E07-9412-BB7D6F5DF771.webp': [899, 1200],
+    'AFF24DCE-0F03-4787-A994-8B2909493E46.webp': [900, 1200],
+    'B3C6BD75-EE64-43B5-B47B-573CA52F2DC5.webp': [900, 1200],
+    'B4050052-25B0-4C39-9F7A-0363BE33FF80.webp': [900, 1200],
+    'B4A38432-2F7E-4DF6-AC0F-5E7D8EE4E209.webp': [900, 1200],
+    'B653CCC5-03EB-4C3A-87F9-A67C078B5305.webp': [899, 1200],
+    'B68A2450-01A9-4BE2-84A4-94FAB323571F.webp': [960, 1200],
+    'BA38C595-CE4F-413D-8932-31DA5374A8DD.webp': [900, 1200],
+    'BA7016B8-221D-4EE4-A591-D195F5D27371.webp': [899, 1200],
+    'BAB84F60-816B-46D0-A686-C20F111D2EAD.webp': [900, 1200],
+    'BAE95F70-8C93-4258-878B-C8F1072EE61A.webp': [900, 1200],
+    'BED69D2C-0886-40BA-9922-6C0B8BB0BB2A.webp': [899, 1200],
+    'C0B278E7-363B-44C8-956B-7AFA8D83C92E.webp': [900, 1200],
+    'C371B279-0A54-408A-887C-77001683EFEF.webp': [900, 1200],
+    'C6C0A571-CFCB-4AAF-9BC7-7CD64BE93D85.webp': [905, 1200],
+    'CCB0EAAB-ED03-4DB0-8F00-5DF015C4227A.webp': [900, 1200],
+    'CD11B737-A774-4BF8-B0BD-EB017CB846B6.webp': [900, 1200],
+    'CD81C696-3876-433E-8079-5D06ED8D79B2.webp': [900, 1200],
+    'D636A909-CC68-47D1-8738-F9C546E9331A.webp': [900, 1200],
+    'D7995E94-06DA-45F9-A185-7EAD31B79211.webp': [900, 1200],
+    'D7B796D5-00BA-42FF-B7A5-FD1C754F8E2B.webp': [900, 1200],
+    'D93468E2-1A8E-4907-B931-0C3B923B2F4C.webp': [899, 1200],
+    'D9EEE7A0-3F9D-41A5-AB81-672435C00B2D.webp': [899, 1200],
+    'DBD3F050-36EE-4238-953F-3D503D05ABB0.webp': [900, 1200],
+    'DC905D7D-0149-401D-88DA-99CC86DF9C02.webp': [900, 1200],
+    'E2C2E93C-4D46-47DA-98C9-DFA993BF509A.webp': [900, 1200],
+    'EFA518AA-681F-483B-A183-DE89DAF6C0F6.webp': [900, 1200],
+    'F22A27C0-1D33-457A-8E37-F50C8212BA99.webp': [900, 1200],
+    'F30CD089-7B50-4246-9365-C4E786A420DE.webp': [899, 1200],
+    'F3895621-0E25-4DA6-971E-6A272D76543B.webp': [960, 1200],
+    'F8E883ED-8304-4847-9F56-2C8AA7F38F78.webp': [900, 1200],
+    'F909B614-1094-45E2-BD5E-5B2205C28EBC.webp': [900, 1200],
+    'FBB21DED-0E2C-4C5A-8558-4FFD599010D2.webp': [900, 1200],
+    'image.webp': [900, 1200],
+    'IMG_0312.webp': [900, 1200],
+    'IMG_1255.webp': [900, 1200],
+    'IMG_4208.webp': [1039, 1200],
+    'IMG_7201.webp': [967, 1200],
+    'IMG_7225.webp': [942, 1200],
+    'IMG_R_0034.webp': [900, 1200]
+  };
   if (galleryGrid) {
     galleryGrid.innerHTML = '';
+    // Плавное появление: карточка показывается только когда фото полностью
+    // загружено и раскодировано, соседние — с небольшой лесенкой.
+    var readyBatchAt = 0, readyBatchN = 0;
+    function markReady(item) {
+      if (item.classList.contains('ready')) return;
+      var now = Date.now();
+      readyBatchN = (now - readyBatchAt < 120) ? readyBatchN + 1 : 0;
+      readyBatchAt = now;
+      var delay = Math.min(readyBatchN, 6) * 70;
+      item.style.transitionDelay = delay + 'ms';
+      item.classList.add('ready');
+      setTimeout(function() { item.style.transitionDelay = ''; }, delay + 900);
+    }
 
     function createGalleryItem(file, idx) {
       var item = document.createElement('div');
@@ -478,21 +648,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // Фото грузятся лениво (при прокрутке), поэтому таймаута «не загрузилось»
       // нет: ошибку показываем только при настоящей ошибке загрузки.
+      var dim = galleryDims[file];
+      if (dim) {
+        img.width = dim[0]; img.height = dim[1];
+        item.style.aspectRatio = dim[0] + ' / ' + dim[1];
+      }
+      img.decoding = 'async';
+      var shown = false;
+      var show = function() {
+        if (shown) return; shown = true;
+        img.classList.add('loaded');
+        markReady(item);
+      };
       img.onload = function() {
-        this.classList.add('loaded');
         item.classList.remove('gallery-error');
-        if (this.naturalWidth && this.naturalHeight) {
-          var closest = this.closest('.gallery-item');
-          if (closest) closest.style.aspectRatio = this.naturalWidth / this.naturalHeight;
+        if (!dim && this.naturalWidth && this.naturalHeight) {
+          item.style.aspectRatio = this.naturalWidth + ' / ' + this.naturalHeight;
         }
+        // decode() — чтобы фото появлялось целиком, а не прорисовывалось по кускам
+        if (img.decode) img.decode().then(show, show); else show();
       };
       img.onerror = function() {
-        this.classList.add('loaded');
         item.classList.add('gallery-error');
+        show();
       };
-      if (img.complete && img.naturalWidth) {
-        img.classList.add('loaded');
-      }
       item.setAttribute('role', 'button');
       item.setAttribute('tabindex', '0');
       item.setAttribute('aria-label', 'Open image');
@@ -571,7 +750,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!img.classList.contains('loaded')) {
           img.classList.add('loaded');
           var parent = img.closest('.gallery-item');
-          if (parent) parent.classList.add('gallery-error');
+          if (parent) { parent.classList.add('gallery-error'); markReady(parent); }
         }
       });
     }, 15000);

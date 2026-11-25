@@ -3185,3 +3185,19 @@ body.ny-season .ny-greeting::after { content: "✦"; font-style: normal; font-si
 @media (prefers-reduced-motion: reduce) {
   .ny-balloon { animation: none; }
 }
+
+
+/* ── Gallery page: photos appear only when fully loaded (no visible loading) ── */
+#galleryGrid .gallery-item::after { display: none; }
+#galleryGrid .gallery-item { background: transparent; }
+#galleryGrid .gallery-item img { opacity: 1; }
+#galleryGrid .gallery-item.reveal {
+  opacity: 0;
+  transform: translateY(24px) scale(.98);
+  transition: opacity .7s var(--ease-out-expo), transform .8s var(--ease-out-expo), box-shadow .5s;
+}
+#galleryGrid .gallery-item.reveal.visible.ready { opacity: 1; transform: none; }
+#galleryGrid .gallery-item.reveal.visible.ready:hover { transform: scale(1.02); }
+@media (prefers-reduced-motion: reduce) {
+  #galleryGrid .gallery-item.reveal { transform: none; transition: opacity .3s; }
+}
