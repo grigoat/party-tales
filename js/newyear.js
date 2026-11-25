@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────────────────────
    PARTY TALES · New Year season 2026/27
-   Snow + golden sparkles and hanging balloon garlands in the heroes.
+   Snow + golden sparkles in the heroes; flakes swirl away from the cursor.
    To switch the season off: remove class "ny-season" from <body>
    (or the <script src="js/newyear.js"> tag) on every page.
    ───────────────────────────────────────────────────────────── */
@@ -9,58 +9,6 @@
   if (!document.body || !document.body.classList.contains('ny-season')) return;
 
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  /* ── Hanging balloons ─────────────────────────────────────── */
-  var PALETTE = {
-    gold:  ['#f7e6bd', '#d9b46a', '#a9843c'],
-    blush: ['#fbe9f2', '#f0c6dc', '#c98fb0'],
-    rose:  ['#f2a9d2', '#d478b0', '#a44f86'],
-    pearl: ['#ffffff', '#f3ede8', '#cfc4bd']
-  };
-  // x, string length, radius, colour — one side; the other side is mirrored
-  var SIDE = [
-    { x: 30,  len: 70,  r: 26, c: 'gold'  },
-    { x: 76,  len: 128, r: 31, c: 'rose'  },
-    { x: 122, len: 46,  r: 21, c: 'pearl' },
-    { x: 160, len: 104, r: 24, c: 'blush' }
-  ];
-  var uid = 0;
-
-  function balloonSVG() {
-    var defs = '', body = '';
-    SIDE.forEach(function (b, i) {
-      var id = 'nyb' + (++uid), p = PALETTE[b.c];
-      defs += '<radialGradient id="' + id + '" cx="35%" cy="30%" r="75%">' +
-        '<stop offset="0" stop-color="' + p[0] + '"/>' +
-        '<stop offset=".55" stop-color="' + p[1] + '"/>' +
-        '<stop offset="1" stop-color="' + p[2] + '"/></radialGradient>';
-      // Hanging balloon: the string ends at the knot on TOP, the round body hangs below
-      var x = b.x, r = b.r, ry = b.r * 1.15, k = b.len, t = k + 6, H = ry * 1.95;
-      var shape = 'M' + x + ' ' + t +
-        ' C ' + (x + r * 0.62) + ' ' + t + ' ' + (x + r) + ' ' + (t + H * 0.22) + ' ' + (x + r) + ' ' + (t + H * 0.55) +
-        ' C ' + (x + r) + ' ' + (t + H * 0.82) + ' ' + (x + r * 0.55) + ' ' + (t + H) + ' ' + x + ' ' + (t + H) +
-        ' C ' + (x - r * 0.55) + ' ' + (t + H) + ' ' + (x - r) + ' ' + (t + H * 0.82) + ' ' + (x - r) + ' ' + (t + H * 0.55) +
-        ' C ' + (x - r) + ' ' + (t + H * 0.22) + ' ' + (x - r * 0.62) + ' ' + t + ' ' + x + ' ' + t + ' Z';
-      var hx = x - r * 0.42, hy = t + H * 0.42;
-      body += '<g class="ny-balloon" style="--d:' + (i * 0.7) + 's;--o:' + x + 'px 0">' +
-        '<path d="M' + x + ' 0 C ' + (x + 4) + ' ' + (k * 0.35) + ' ' + (x - 4) + ' ' + (k * 0.7) + ' ' + x + ' ' + k + '" stroke="#d9b46a" stroke-width="1" fill="none" opacity=".75"/>' +
-        '<path d="' + shape + '" fill="url(#' + id + ')"/>' +
-        '<ellipse cx="' + hx + '" cy="' + hy + '" rx="' + (r * 0.18) + '" ry="' + (r * 0.34) + '" fill="#fff" opacity=".5" transform="rotate(18 ' + hx + ' ' + hy + ')"/>' +
-        '<path d="M' + (x - 1.6) + ' ' + (t + 1) + ' L' + (x - 3.6) + ' ' + k + ' L' + (x + 3.6) + ' ' + k + ' L' + (x + 1.6) + ' ' + (t + 1) + ' Z" fill="' + p[2] + '"/>' +
-        '</g>';
-    });
-    return '<svg viewBox="0 0 190 220" aria-hidden="true" focusable="false"><defs>' + defs + '</defs>' + body + '</svg>';
-  }
-
-  function addGarlands(host) {
-    ['left', 'right'].forEach(function (side) {
-      var el = document.createElement('div');
-      el.className = 'ny-garland ny-garland-' + side;
-      el.setAttribute('aria-hidden', 'true');
-      el.innerHTML = balloonSVG();
-      host.appendChild(el);
-    });
-  }
 
   /* ── Snow & sparkles ──────────────────────────────────────── */
   function addSky(host, dark) {
@@ -73,6 +21,13 @@
 
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var w = 0, h = 0, flakes = [], running = false, visible = true, raf = 0;
+    var mx = -9999, my = -9999, R = 130;
+    if (window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      host.addEventListener('pointermove', function (e) {
+        var rc = host.getBoundingClientRect(); mx = e.clientX - rc.left; my = e.clientY - rc.top;
+      });
+      host.addEventListener('pointerleave', function () { mx = my = -9999; });
+    }
     var colours = dark
       ? ['255,255,255', '255,255,255', '255,255,255', '243,223,174', '240,214,229']
       : ['217,180,106', '217,180,106', '212,120,176', '201,143,176'];
@@ -89,7 +44,8 @@
         a: dark ? 0.35 + Math.random() * 0.5 : 0.25 + Math.random() * 0.35,
         c: colours[Math.floor(Math.random() * colours.length)],
         sparkle: sparkle,
-        tw: Math.random() * Math.PI * 2
+        tw: Math.random() * Math.PI * 2,
+        px: 0, py: 0
       };
     }
 
@@ -119,7 +75,14 @@
         var f = flakes[i];
         if (step) {
           f.sway += 0.012; f.tw += 0.05;
-          f.y += f.vy; f.x += f.vx + Math.sin(f.sway) * 0.3;
+          var dx = f.x - mx, dy = f.y - my, d2 = dx * dx + dy * dy;
+          if (d2 < R * R && d2 > 1) {           // swirl away from the cursor
+            var d = Math.sqrt(d2), force = (1 - d / R) * 1.6;
+            f.px += (dx / d) * force - (dy / d) * force * 0.5;
+            f.py += (dy / d) * force + (dx / d) * force * 0.5;
+          }
+          f.px *= 0.92; f.py *= 0.92;
+          f.y += f.vy + f.py; f.x += f.vx + Math.sin(f.sway) * 0.3 + f.px;
           if (f.y > h + 10 || f.x < -20 || f.x > w + 20) { flakes[i] = make(false); continue; }
         }
         if (f.sparkle) {
@@ -155,22 +118,12 @@
 
   /* ── Mount ────────────────────────────────────────────────── */
   var hero = document.querySelector('.hero');
-  if (hero) addSky(hero, true); // home hero is already full of balloon photos — snow only
+  if (hero) addSky(hero, true);
 
-  var heroes = document.querySelectorAll('.page-hero');
-  heroes.forEach(function (el) {
+  document.querySelectorAll('.page-hero').forEach(function (el) {
     el.classList.add('ny-host');
     addSky(el, false);
-    addGarlands(el);
   });
-  // Hang the garlands just below the fixed navigation bar
-  var nav = document.getElementById('navbar');
-  function placeGarlands() {
-    var top = nav ? nav.offsetHeight : 0;
-    document.querySelectorAll('.page-hero .ny-garland').forEach(function (g) { g.style.top = top + 'px'; });
-  }
-  placeGarlands();
-  window.addEventListener('resize', placeGarlands);
 
   var cta = document.getElementById('cta-final');
   if (cta) addSky(cta, true);

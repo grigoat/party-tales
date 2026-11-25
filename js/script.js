@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (lightboxVideo && !lightboxVideo.paused) lightboxVideo.pause();
   }
 
-  function openLightbox(index) {
+  function openLightboxNow(index) {
     // Единый список медиа: фото и видео — каждый .gallery-item несёт ровно
     // одно из двух, индексы совпадают с порядком в DOM.
     var items = document.querySelectorAll('.gallery-item');
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (closeBtn) closeBtn.focus();
   }
 
-  function closeLightbox() {
+  function closeLightboxNow() {
     stopLightboxVideo();
     lightbox.classList.remove('open');
     document.body.style.overflow = '';
@@ -75,6 +75,54 @@ document.addEventListener('DOMContentLoaded', function() {
       lightboxLastFocus.focus();
       lightboxLastFocus = null;
     }
+  }
+
+  // Фото «вылетает» из сетки на весь экран и возвращается обратно
+  // (View Transitions API; без поддержки — обычное открытие).
+  var lbReduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var lbThumb = null;
+  function lbCanMorph() { return !!document.startViewTransition && !lbReduce; }
+  function lbMorph(update, done) {
+    var root = document.documentElement;
+    root.classList.add('lb-vt');
+    lightbox.classList.add('lb-instant');
+    var t = document.startViewTransition(update);
+    t.ready.catch(function() {});
+    t.finished.then(cleanup, cleanup);
+    function cleanup() {
+      root.classList.remove('lb-vt');
+      lightbox.classList.remove('lb-instant');
+      if (done) done();
+    }
+  }
+  function openLightbox(index) {
+    var items = document.querySelectorAll('.gallery-item');
+    var item = items[index];
+    var thumb = item && !item.getAttribute('data-video') ? item.querySelector('img') : null;
+    if (!thumb || lightbox.classList.contains('open') || !lbCanMorph()) { openLightboxNow(index); return; }
+    lbThumb = thumb;
+    thumb.style.viewTransitionName = 'pt-photo';
+    lbMorph(function() {
+      thumb.style.viewTransitionName = '';
+      openLightboxNow(index);
+      lightboxImg.style.viewTransitionName = 'pt-photo';
+      return lightboxImg.decode ? lightboxImg.decode().catch(function() {}) : null;
+    }, function() { lightboxImg.style.viewTransitionName = ''; });
+  }
+  function closeLightbox() {
+    var items = document.querySelectorAll('.gallery-item');
+    var item = items[currentIndex];
+    var thumb = item && !item.classList.contains('hidden') && !lightbox.classList.contains('is-video') ? item.querySelector('img') : null;
+    if (!thumb || !lightbox.classList.contains('open') || !lbCanMorph()) { closeLightboxNow(); return; }
+    // если пролистали стрелками — сперва подкручиваем сетку к этому фото
+    var r = item.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > window.innerHeight) item.scrollIntoView({ block: 'center' });
+    lightboxImg.style.viewTransitionName = 'pt-photo';
+    lbMorph(function() {
+      lightboxImg.style.viewTransitionName = '';
+      thumb.style.viewTransitionName = 'pt-photo';
+      closeLightboxNow();
+    }, function() { thumb.style.viewTransitionName = ''; });
   }
 
   function changeImage(dir) {

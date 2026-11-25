@@ -3122,28 +3122,10 @@ footer .logo img { height: 120px; width: auto; }
 .hero .ny-sky { z-index: 1; }
 #cta-final .ny-sky { z-index: 0; }
 
-.ny-garland {
-  position: absolute; top: 0; z-index: 1;
-  width: clamp(110px, 11vw, 170px);
-  pointer-events: none;
-}
-.ny-garland svg { display: block; width: 100%; height: auto; overflow: visible; }
-.ny-garland-left  { left: clamp(.5rem, 3vw, 3rem); }
-.ny-garland-right { right: clamp(.5rem, 3vw, 3rem); transform: scaleX(-1); }
-.ny-balloon {
-  transform-box: view-box;
-  transform-origin: var(--o);
-  animation: nyBalloonSway 6s ease-in-out infinite alternate;
-  animation-delay: calc(var(--d) * -1);
-}
-@keyframes nyBalloonSway {
-  from { transform: rotate(-3deg); }
-  to   { transform: rotate(3deg); }
-}
 
 /* Inner pages: soft champagne glow behind the title */
 .page-hero.ny-host { position: relative; overflow: hidden; }
-.page-hero.ny-host > :not(.ny-sky):not(.ny-garland) { position: relative; z-index: 2; }
+.page-hero.ny-host > :not(.ny-sky) { position: relative; z-index: 2; }
 body.ny-season .page-hero {
   background:
     radial-gradient(ellipse 60% 70% at 50% 0%, rgba(243,223,174,.32), transparent 70%),
@@ -3154,9 +3136,21 @@ body.ny-season .page-hero-eyebrow { color: #9a7530; }
 /* Home hero & final CTA: champagne-gold accent words */
 body.ny-season .hero .hero-emphasis,
 body.ny-season #cta-final .hero-emphasis {
-  background: linear-gradient(100deg, #f7e6bd 0%, #e6c785 40%, #f0d6e5 100%);
+  background: linear-gradient(100deg, #f0d6e5 0%, #e6c785 30%, #fff6dc 42%, #e6c785 54%, #f7e6bd 70%, #f0d6e5 100%);
+  background-size: 260% 100%;
+  background-position: 100% 0;
   -webkit-background-clip: text; background-clip: text;
   color: transparent;
+  animation: nyShine 7s cubic-bezier(.45,0,.25,1) 1.2s infinite;
+}
+/* a champagne glint that sweeps across the words every few seconds */
+@keyframes nyShine {
+  0%   { background-position: 100% 0; }
+  45%  { background-position: 0% 0; }
+  100% { background-position: 0% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.ny-season .hero .hero-emphasis, body.ny-season #cta-final .hero-emphasis { animation: none; background-position: 50% 0; }
 }
 body.ny-season .hero-eyebrow {
   color: #f3dfae;
@@ -3178,13 +3172,6 @@ body.ny-season .ny-greeting {
 body.ny-season .ny-greeting::before,
 body.ny-season .ny-greeting::after { content: "✦"; font-style: normal; font-size: .7em; margin: 0 .6em; color: #d9b46a; vertical-align: .15em; }
 
-/* Narrow screens: no room beside the title — keep only the snow */
-@media (max-width: 1100px) {
-  .ny-garland { display: none; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ny-balloon { animation: none; }
-}
 
 
 /* ── Gallery page: photos appear only when fully loaded (no visible loading) ── */
@@ -3200,4 +3187,56 @@ body.ny-season .ny-greeting::after { content: "✦"; font-style: normal; font-si
 #galleryGrid .gallery-item.reveal.visible.ready:hover { transform: scale(1.02); }
 @media (prefers-reduced-motion: reduce) {
   #galleryGrid .gallery-item.reveal { transform: none; transition: opacity .3s; }
+}
+
+
+/* ═════════════ Motion upgrades · November 2026 ═════════════ */
+
+/* 1. Smooth page-to-page transitions (cross-document View Transitions).
+      The menu bar, chat and back-to-top button stay still; the page glides. */
+@view-transition { navigation: auto; }
+#navbar { view-transition-name: site-nav; }
+.pt-chat { view-transition-name: site-chat; }
+.back-to-top { view-transition-name: site-top; }
+::view-transition-old(root) { animation: ptPageOut .22s ease-in both; }
+::view-transition-new(root) { animation: ptPageIn .5s cubic-bezier(.2,.8,.2,1) .05s both; }
+@keyframes ptPageOut { to { opacity: 0; transform: translateY(-10px); } }
+@keyframes ptPageIn  { from { opacity: 0; transform: translateY(16px); } }
+/* returning visitors moving between pages don't see the logo splash again */
+html.pt-seen #preloader { display: none; }
+
+/* 2. Gallery photo flies out of the grid into full screen and back */
+::view-transition-group(pt-photo) {
+  animation-duration: .5s;
+  animation-timing-function: cubic-bezier(.2,.8,.2,1);
+}
+::view-transition-old(pt-photo), ::view-transition-new(pt-photo) {
+  height: 100%; object-fit: cover; overflow: hidden;
+}
+html.lb-vt::view-transition-old(root) { animation: ptFade .35s ease both reverse; }
+html.lb-vt::view-transition-new(root) { animation: ptFade .35s ease both; }
+@keyframes ptFade { from { opacity: 0; } }
+.lightbox.lb-instant { transition: none; }
+html.lb-vt #navbar, html.lb-vt .pt-chat, html.lb-vt .back-to-top { view-transition-name: none; }
+
+/* 3. Home hero melts away as you scroll (scroll-driven animation) */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-content {
+      animation: ptHeroAway linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 85vh;
+    }
+    .hero-ny-bg, .hero-video-bg .hero-video-wrapper {
+      animation: ptHeroZoom linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100vh;
+    }
+  }
+}
+@keyframes ptHeroAway { to { opacity: 0; transform: translateY(-70px) scale(.96); filter: blur(3px); } }
+@keyframes ptHeroZoom { to { transform: scale(1.08); } }
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
 }
