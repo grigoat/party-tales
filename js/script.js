@@ -133,6 +133,41 @@ document.addEventListener('DOMContentLoaded', function() {
   var galleryGrid = document.getElementById('galleryGrid');
   var galleryFilters = document.getElementById('galleryFilters');
   var galleryCat = {
+  'ny-ba15b865-f12d-46cc-a1fe-ffc3fbe46173.webp': 'newyear',
+  'ny-img_4770.webp': 'newyear',
+  'ny-img_5360.webp': 'newyear',
+  'ny-img_5843.webp': 'newyear',
+  'ny-img_5859.webp': 'newyear',
+  'ny-img_7339.webp': 'newyear',
+  'ny-img_7346.webp': 'newyear',
+  'ny-img_7357.webp': 'newyear',
+  'ny-img_7364.webp': 'newyear',
+  'ny-img_7387.webp': 'newyear',
+  'ny-img_7392.webp': 'newyear',
+  'ny-img_7487.webp': 'newyear',
+  'ny-img_7492.webp': 'newyear',
+  'ny-img_7512.webp': 'newyear',
+  'ny-img_7542.webp': 'newyear',
+  'ny-img_7585.webp': 'newyear',
+  'ny-img_7590.webp': 'newyear',
+  'ny-img_7616.webp': 'newyear',
+  'ny-img_7662.webp': 'newyear',
+  'ny-img_7678.webp': 'newyear',
+  'ny-img_7801.webp': 'newyear',
+  'ny-img_7822.webp': 'newyear',
+  'ny-img_7832.webp': 'newyear',
+  'ny-img_7942.webp': 'newyear',
+  'ny-img_7955.webp': 'newyear',
+  'ny-img_7972.webp': 'newyear',
+  'ny-img_7994.webp': 'newyear',
+  'ny-img_8011.webp': 'newyear',
+  'ny-img_8026.webp': 'newyear',
+  'ny-img_8034.webp': 'newyear',
+  'ny-img_8197.webp': 'newyear',
+  'ny-img_8208.webp': 'newyear',
+  'fz-20260605_231713.webp': 'photozone',
+  'fz-20260619_230811.webp': 'photozone',
+  'fz-20260606_184226.webp': 'photozone',
   '0523BDD4-D1CF-4375-8A27-1834ED5CAF10.webp': 'boys',
   '0744315C-D24A-4CD5-A0E8-C6AB50BDE2DF.webp': 'love',
   '0E76160B-8854-42E9-8C8C-C932ED7D3C13.webp': 'girls',
@@ -253,6 +288,41 @@ document.addEventListener('DOMContentLoaded', function() {
   'IMG_R_0034.webp': 'boys photozone'
   };
   var galleryFiles = [
+  'ny-ba15b865-f12d-46cc-a1fe-ffc3fbe46173.webp',
+  'ny-img_4770.webp',
+  'ny-img_5360.webp',
+  'ny-img_5843.webp',
+  'ny-img_5859.webp',
+  'ny-img_7339.webp',
+  'ny-img_7346.webp',
+  'ny-img_7357.webp',
+  'ny-img_7364.webp',
+  'ny-img_7387.webp',
+  'ny-img_7392.webp',
+  'ny-img_7487.webp',
+  'ny-img_7492.webp',
+  'ny-img_7512.webp',
+  'ny-img_7542.webp',
+  'ny-img_7585.webp',
+  'ny-img_7590.webp',
+  'ny-img_7616.webp',
+  'ny-img_7662.webp',
+  'ny-img_7678.webp',
+  'ny-img_7801.webp',
+  'ny-img_7822.webp',
+  'ny-img_7832.webp',
+  'ny-img_7942.webp',
+  'ny-img_7955.webp',
+  'ny-img_7972.webp',
+  'ny-img_7994.webp',
+  'ny-img_8011.webp',
+  'ny-img_8026.webp',
+  'ny-img_8034.webp',
+  'ny-img_8197.webp',
+  'ny-img_8208.webp',
+  'fz-20260605_231713.webp',
+  'fz-20260619_230811.webp',
+  'fz-20260606_184226.webp',
   '0523BDD4-D1CF-4375-8A27-1834ED5CAF10.webp',
   '0744315C-D24A-4CD5-A0E8-C6AB50BDE2DF.webp',
   '0E76160B-8854-42E9-8C8C-C932ED7D3C13.webp',
@@ -406,31 +476,22 @@ document.addEventListener('DOMContentLoaded', function() {
       img.loading = 'lazy';
       img.setAttribute('data-i18n-aria', 'gallery.img.alt');
 
-      var loadTimer = setTimeout(function() {
-        if (!img.classList.contains('loaded')) {
-          item.classList.add('gallery-error');
-        }
-      }, 10000);
-
+      // Фото грузятся лениво (при прокрутке), поэтому таймаута «не загрузилось»
+      // нет: ошибку показываем только при настоящей ошибке загрузки.
       img.onload = function() {
-        clearTimeout(loadTimer);
         this.classList.add('loaded');
+        item.classList.remove('gallery-error');
         if (this.naturalWidth && this.naturalHeight) {
           var closest = this.closest('.gallery-item');
           if (closest) closest.style.aspectRatio = this.naturalWidth / this.naturalHeight;
         }
       };
       img.onerror = function() {
-        clearTimeout(loadTimer);
         this.classList.add('loaded');
         item.classList.add('gallery-error');
       };
-      if (img.complete) {
-        if (img.naturalWidth) {
-          img.classList.add('loaded');
-        } else {
-          item.classList.add('gallery-error');
-        }
+      if (img.complete && img.naturalWidth) {
+        img.classList.add('loaded');
       }
       item.setAttribute('role', 'button');
       item.setAttribute('tabindex', '0');
@@ -449,7 +510,7 @@ document.addEventListener('DOMContentLoaded', function() {
       item.innerHTML = '<div class="gallery-error-msg">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">' +
         '<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h0" stroke-linecap="round"/></svg>' +
-        '<span>Failed to load</span></div>' +
+        '<span data-i18n="gallery.img.error">Foto nicht geladen</span></div>' +
         '<div class="gallery-overlay"><span class="gallery-overlay-label" data-i18n="gallery.img.label">View</span><span class="gallery-overlay-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>';
       item.insertBefore(img, item.firstChild);
       return item;
@@ -593,7 +654,9 @@ document.addEventListener('DOMContentLoaded', function() {
   var heroVideo1 = document.getElementById('heroVideo1');
   var heroVideo2 = document.getElementById('heroVideo2');
 
-  if (heroVideoBg && (heroVideoSingle || heroVideo0)) {
+  // Пока стоит новогодняя заставка (#heroNewYear), видео в hero не грузим.
+  if (document.getElementById('heroNewYear') && heroVideoBg) heroVideoBg.style.display = 'none';
+  else if (heroVideoBg && (heroVideoSingle || heroVideo0)) {
     var currentMode = '';
     var singleSlot = null;
     var slots = [];
